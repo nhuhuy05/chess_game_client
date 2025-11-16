@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane prefHeight="700" prefWidth="1200.0" style="-fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chess_client.controllers.HomeController">
+
+    <!-- Header -->
+    <top>
+        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 30 20 20 20;">
+            <Label style="-fx-text-fill: #f1f1f1; -fx-font-size: 48px; -fx-font-weight: bold; -fx-font-family: 'Arial Black';" text="♚ CHESS ♚">
+                <font>
+                    <Font name="System Bold" size="48.0" />
+                </font>
+            </Label>
+            <Label fx:id="lblWelcome" style="-fx-text-fill: #e94560; -fx-font-size: 18px; -fx-font-style: italic;" text="Chào mừng đến với chess game" />
+        </VBox>
+    </top>
+
+    <!-- Center - Menu Buttons -->
+    <center>
+        <VBox alignment="CENTER" spacing="20" style="-fx-padding: 20;">
+
+            <!-- Ghép ngẫu nhiên -->
+            <Button fx:id="btnRandom" onAction="#handleRandomMatch" prefHeight="45.0" prefWidth="360.0" style="-fx-background-color: linear-gradient(to right, #e94560, #d32f2f);                            -fx-text-fill: white;                            -fx-font-size: 20px;                            -fx-font-weight: bold;                            -fx-background-radius: 15;                            -fx-cursor: hand;                            -fx-effect: dropshadow(gaussian, rgba(233, 69, 96, 0.5), 10, 0, 0, 3);" text="⚡ GHÉP NGẪU NHIÊN">
+            </Button>
+
+            <!-- Chơi với máy -->
+            <Button fx:id="btnComputer" onAction="#handlePlayComputer" prefHeight="45" prefWidth="360" style="-fx-background-color: linear-gradient(to right, #4a90e2, #357abd);                            -fx-text-fill: white;                            -fx-font-size: 20px;                            -fx-font-weight: bold;                            -fx-background-radius: 15;                            -fx-cursor: hand;                            -fx-effect: dropshadow(gaussian, rgba(74, 144, 226, 0.5), 10, 0, 0, 3);" text="🤖 CHƠI VỚI MÁY">
+            </Button>
+
+            <!-- Chơi với bạn bè -->
+            <Button fx:id="btnFriend" onAction="#handlePlayFriend" prefHeight="45" prefWidth="360" style="-fx-background-color: linear-gradient(to right, #50c878, #3ba55d);                            -fx-text-fill: white;                            -fx-font-size: 20px;                            -fx-font-weight: bold;                            -fx-background-radius: 15;                            -fx-cursor: hand;                            -fx-effect: dropshadow(gaussian, rgba(80, 200, 120, 0.5), 10, 0, 0, 3);" text="👥 CHƠI VỚI BẠN BÈ">
+            </Button>
+
+            <!-- Bảng xếp hạng -->
+            <Button fx:id="btnLeaderboard" onAction="#handleLeaderboard" prefHeight="45" prefWidth="360" style="-fx-background-color: linear-gradient(to right, #ffa500, #ff8c00);                            -fx-text-fill: white;                            -fx-font-size: 20px;                            -fx-font-weight: bold;                            -fx-background-radius: 15;                            -fx-cursor: hand;                            -fx-effect: dropshadow(gaussian, rgba(255, 165, 0, 0.5), 10, 0, 0, 3);" text="🏆 BẢNG XẾP HẠNG">
+            </Button>
+
+            <!-- Hồ sơ cá nhân -->
+            <Button fx:id="btnProfile" onAction="#handleProfile" prefHeight="45" prefWidth="360" style="-fx-background-color: linear-gradient(to right, #9b59b6, #8e44ad);                            -fx-text-fill: white;                            -fx-font-size: 20px;                            -fx-font-weight: bold;                            -fx-background-radius: 15;                            -fx-cursor: hand;                            -fx-effect: dropshadow(gaussian, rgba(155, 89, 182, 0.5), 10, 0, 0, 3);" text="👤 HỒ SƠ CÁ NHÂN">
+            </Button>
+
+            <!-- Thoát -->
+            <Button fx:id="btnExit" onAction="#handleExit" prefHeight="45" prefWidth="360" style="-fx-background-color: linear-gradient(to right, #6c757d, #5a6268);                            -fx-text-fill: white;                            -fx-font-size: 20px;                            -fx-font-weight: bold;                            -fx-background-radius: 15;                            -fx-cursor: hand;                            -fx-effect: dropshadow(gaussian, rgba(108, 117, 125, 0.5), 10, 0, 0, 3);" text="🚪 THOÁT">
+            </Button>
+
+        </VBox>
+    </center>
+
+    <!-- Footer -->
+    <bottom>
+        <HBox alignment="CENTER" style="-fx-padding: 20;">
+            <Label style="-fx-text-fill: #95a5a6; -fx-font-size: 12px;" text="© 2025 Chess Game" />
+        </HBox>
+    </bottom>
+
+</BorderPane>
