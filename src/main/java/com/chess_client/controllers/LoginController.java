@@ -39,7 +39,9 @@ public class LoginController {
         }
 
         if (result.has("accessToken")) {
-            TokenStorage.save(result.getString("accessToken"), result.getString("refreshToken"));
+            String displayName = result.optString("displayName", username);
+            String userId = result.optString("userId", null);
+            TokenStorage.save(result.getString("accessToken"), result.getString("refreshToken"), displayName, userId);
             showInfo("Đăng nhập thành công!");
             onHome();
         } else {

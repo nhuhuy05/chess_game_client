@@ -22,18 +22,13 @@ public class GameLogic {
             return false;
         }
 
-        // Kiểm tra theo luật của từng quân
+        // Kiểm tra theo luật di chuyển của từng quân cờ
         if (!isPieceMoveLegal(move)) {
             return false;
         }
 
-        // Kiểm tra xem sau khi đi có bị chiếu không
-        Board tempBoard = board.copy();
-        tempBoard.movePiece(move);
-        if (isKingInCheck(tempBoard, currentPlayer)) {
-            return false;
-        }
-
+        // Theo yêu cầu: KHÔNG kiểm tra việc vua có còn bị chiếu sau khi đi hay không.
+        // Nghĩa là nước đi vẫn được chấp nhận kể cả khi không thoát khỏi chiếu tướng.
         return true;
     }
 
@@ -265,7 +260,8 @@ public class GameLogic {
                     break;
                 }
             }
-            if (kingRow != -1) break;
+            if (kingRow != -1)
+                break;
         }
 
         // Kiểm tra xem có quân địch nào có thể ăn vua không
@@ -326,5 +322,21 @@ public class GameLogic {
         }
 
         return validMoves;
+    }
+
+    /**
+     * Kiểm tra trên bàn cờ hiện tại còn vua của màu cho trước hay không.
+     * Dùng để xác định bên nào đã bị mất vua (thua cuộc).
+     */
+    public boolean hasKing(Piece.Color color) {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Piece piece = board.getPiece(row, col);
+                if (piece != null && piece.getType() == Piece.Type.KING && piece.getColor() == color) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

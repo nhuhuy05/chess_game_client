@@ -26,7 +26,6 @@ public class AuthService {
                     client.send(request, HttpResponse.BodyHandlers.ofString());
 
             System.out.println("Status: " + response.statusCode());
-            System.out.println("Response: " + response.body());
 
             // chỉ parse nếu là JSON thật
             String bodyText = response.body().trim();

@@ -1,93 +1,148 @@
 package com.chess_client.controllers;
 
-import com.chess_client.models.*;
+import com.chess_client.models.Board;
+import com.chess_client.models.Move;
+import com.chess_client.models.Piece;
 import com.chess_client.services.GameLogic;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameController {
 
     // ===================== UI COMPONENTS - BOARD =====================
-    @FXML private GridPane chessBoard;
+    @FXML
+    private GridPane chessBoard;
 
     // ===================== UI COMPONENTS - PLAYER INFO =====================
-    @FXML private Label opponentPlayerLabel;
-    @FXML private Label opponentTimeLabel;
-    @FXML private Label playerLabel;
-    @FXML private Label playerTimeLabel;
+    @FXML
+    private Label opponentPlayerLabel;
+    @FXML
+    private Label playerLabel;
 
     // ===================== UI COMPONENTS - GAME INFO =====================
-    @FXML private Label turnLabel;
-    @FXML private Label statusLabel;
-    @FXML private Label lastMoveLabel;
+    @FXML
+    private Label turnLabel;
+    @FXML
+    private Label statusLabel;
+    @FXML
+    private Label lastMoveLabel;
 
     // ===================== UI COMPONENTS - BUTTONS =====================
-    @FXML private Button drawButton;
-    @FXML private Button resignButton;
+    @FXML
+    private Button drawButton;
+    @FXML
+    private Button resignButton;
 
     // ===================== UI COMPONENTS - CHAT =====================
-    @FXML private ScrollPane chatScrollPane;
-    @FXML private VBox chatMessagesBox;
-    @FXML private TextField chatInput;
-    @FXML private Button sendMessageButton;
+    @FXML
+    private ScrollPane chatScrollPane;
+    @FXML
+    private VBox chatMessagesBox;
+    @FXML
+    private TextField chatInput;
+    @FXML
+    private Button sendMessageButton;
+
+    private ChatManager chatManager;
+    private BoardView boardView;
 
     // ===================== GAME STATE =====================
     private Board board;
     private GameLogic gameLogic;
     private Piece.Color currentPlayer;
     private Piece.Color playerColor;
-    private StackPane selectedSquare;
-    private int selectedRow = -1;
-    private int selectedCol = -1;
-    private List<StackPane> highlightedSquares;
+    private String playerName;
+    private String opponentName;
     private List<Move> moveHistory;
-
-    // ===================== CONSTANTS =====================
-    private static final int SQUARE_SIZE = 70;
-    private static final Color LIGHT_SQUARE = Color.web("#f0d9b5");
-    private static final Color DARK_SQUARE = Color.web("#b58863");
-    private static final Color SELECTED_COLOR = Color.web("#baca44");
-    private static final Color VALID_MOVE_COLOR = Color.web("#769656", 0.7);
+    private Socket peerSocket;
+    private BufferedReader peerIn;
+    private PrintWriter peerOut;
 
     // ===================== INITIALIZATION =====================
     @FXML
     public void initialize() {
-        highlightedSquares = new ArrayList<>();
         moveHistory = new ArrayList<>();
         playerColor = Piece.Color.WHITE; // Mặc định người chơi là TRẮNG
         initializeGame();
-        drawBoard();
+
+        // Khởi tạo BoardView để vẽ và điều khiển bàn cờ
+        boardView = new BoardView(chessBoard, board, gameLogic, playerColor, this::executeMove);
+        boardView.setCurrentPlayer(currentPlayer);
+        boardView.refreshBoard();
+
         setupEventHandlers();
-        setupChatEnterKey();
+
+        // Khởi tạo quản lý chat
+        chatManager = new ChatManager(chatScrollPane, chatMessagesBox, chatInput, sendMessageButton);
+        chatManager.initialize();
+    }
+
+    /**
+     * Được gọi từ HomeController sau khi ghép trận để set tên người chơi và đối thủ.
+     */
+    public void setPlayerNames(String playerName, String opponentName) {
+        this.playerName = playerName;
+        this.opponentName = opponentName;
+        updatePlayerLabels();
+    }
+
+    /**
+     * Được gọi từ HomeController sau khi ghép trận để set màu quân (WHITE/BLACK).
+     */
+    public void setPlayerColor(Piece.Color color) {
+        this.playerColor = color;
+        updatePlayerLabels();
+        if (boardView != null) {
+            boardView.setPlayerColor(color);
+            boardView.refreshBoard();
+        }
+    }
+
+    /**
+     * Socket P2P đã được thiết lập giữa hai client (LAN).
+     * TODO: sử dụng socket này để gửi/nhận nước đi, chat realtime.
+     */
+    public void setPeerSocket(Socket socket) {
+        this.peerSocket = socket;
+        try {
+            this.peerIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.peerOut = new PrintWriter(socket.getOutputStream(), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Lắng nghe nước đi từ đối thủ ở thread riêng
+        Thread listener = new Thread(this::listenForPeerMoves);
+        listener.setDaemon(true);
+        listener.start();
     }
 
     private void setupEventHandlers() {
         drawButton.setOnAction(e -> offerDraw());
         resignButton.setOnAction(e -> resign());
-        sendMessageButton.setOnAction(e -> sendMessage());
-    }
-
-    private void setupChatEnterKey() {
-        chatInput.setOnAction(e -> sendMessage());
     }
 
     private void initializeGame() {
         board = new Board();
         gameLogic = new GameLogic(board);
         currentPlayer = Piece.Color.WHITE;
-        selectedRow = -1;
-        selectedCol = -1;
-        selectedSquare = null;
-        highlightedSquares.clear();
         moveHistory.clear();
 
         updateLabels();
@@ -98,151 +153,62 @@ public class GameController {
 
     private void updatePlayerLabels() {
         if (playerColor == Piece.Color.WHITE) {
-            playerLabel.setText("Bạn: TRẮNG");
-            opponentPlayerLabel.setText("Đối thủ: ĐEN");
+            playerLabel.setText("Quân Trắng\n" + (playerName != null ? playerName : "Bạn"));
+            opponentPlayerLabel.setText("Quân Đen\n" + (opponentName != null ? opponentName : "Đối thủ"));
         } else {
-            playerLabel.setText("Bạn: ĐEN");
-            opponentPlayerLabel.setText("Đối thủ: TRẮNG");
-        }
-        playerTimeLabel.setText("10:00");
-        opponentTimeLabel.setText("10:00");
-    }
-
-    // ===================== BOARD RENDERING =====================
-    private void drawBoard() {
-        chessBoard.getChildren().clear();
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                StackPane square = createSquare(row, col);
-                chessBoard.add(square, col, row);
-            }
-        }
-    }
-
-    private StackPane createSquare(int row, int col) {
-        StackPane square = new StackPane();
-        square.setPrefSize(SQUARE_SIZE, SQUARE_SIZE);
-
-        // Background color
-        Rectangle background = new Rectangle(SQUARE_SIZE, SQUARE_SIZE);
-        background.setFill((row + col) % 2 == 0 ? LIGHT_SQUARE : DARK_SQUARE);
-        square.getChildren().add(background);
-
-        // Piece
-        Piece piece = board.getPiece(row, col);
-        if (piece != null) {
-            Text pieceText = new Text(piece.getUnicode());
-            pieceText.setFont(Font.font(50));
-            pieceText.setFill(Color.BLACK);
-            square.getChildren().add(pieceText);
-        }
-
-        // Click event
-        final int r = row, c = col;
-        square.setOnMouseClicked(e -> handleSquareClick(r, c, square));
-        return square;
-    }
-
-    // ===================== MOVE HANDLING =====================
-    private void handleSquareClick(int row, int col, StackPane square) {
-        Piece clickedPiece = board.getPiece(row, col);
-
-        // Nếu đã chọn quân và click vào ô hợp lệ
-        if (selectedRow != -1 && selectedCol != -1) {
-            Move move = new Move(selectedRow, selectedCol, row, col, board.getPiece(selectedRow, selectedCol));
-            if (gameLogic.isValidMove(move, currentPlayer)) {
-                executeMove(move);
-                return;
-            }
-        }
-
-        // Chọn quân mới
-        if (clickedPiece != null && clickedPiece.getColor() == currentPlayer) {
-            clearHighlights();
-            selectedRow = row;
-            selectedCol = col;
-            selectedSquare = square;
-            highlightSquare(square, SELECTED_COLOR);
-            showValidMoves(row, col);
-        } else {
-            clearSelection();
+            playerLabel.setText("Quân Đen\n" + (playerName != null ? playerName : "Bạn"));
+            opponentPlayerLabel.setText("Quân Trắng\n" + (opponentName != null ? opponentName : "Đối thủ"));
         }
     }
 
     private void executeMove(Move move) {
+        executeMove(move, false);
+    }
+
+    /**
+     * @param fromNetwork true nếu nước đi đến từ socket P2P (không gửi lại tránh vòng lặp)
+     */
+    private void executeMove(Move move, boolean fromNetwork) {
         board.movePiece(move);
         moveHistory.add(move);
         updateLastMoveLabel(move);
 
+        if (!fromNetwork) {
+            sendMoveToPeer(move);
+        }
+
+        // Sau khi đi xong, kiểm tra xem bên nào đã mất vua
+        boolean whiteHasKing = gameLogic.hasKing(Piece.Color.WHITE);
+        boolean blackHasKing = gameLogic.hasKing(Piece.Color.BLACK);
+
+        if (!whiteHasKing || !blackHasKing) {
+            Piece.Color winner = whiteHasKing ? Piece.Color.WHITE : Piece.Color.BLACK;
+            statusLabel.setText("VUA BỊ ĂN! " + (winner == Piece.Color.WHITE ? "TRẮNG" : "ĐEN") + " THẮNG!");
+            disableGameButtons(false);
+
+            // Ngừng cho phép tiếp tục đi cờ
+            if (boardView != null) {
+                boardView.setCurrentPlayer(null);
+                boardView.refreshBoard();
+            }
+            return;
+        }
+
+        // Nếu cả hai bên vẫn còn vua, tiếp tục ván đấu như bình thường
         currentPlayer = currentPlayer == Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
 
-        if (gameLogic.isCheckmate(currentPlayer)) {
-            Piece.Color winner = currentPlayer == Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
-            statusLabel.setText("CHIẾU HẾT! " + (winner == Piece.Color.WHITE ? "TRẮNG" : "ĐEN") + " THẮNG!");
-            disableGameButtons(false);
-        } else if (gameLogic.isStalemate(currentPlayer)) {
-            statusLabel.setText("HÒA CỜ (Stalemate)");
-            disableGameButtons(false);
-        } else if (gameLogic.isKingInCheck(board, currentPlayer)) {
+        // Hiển thị trạng thái chiếu tướng (chỉ để báo, không giới hạn nước đi)
+        if (gameLogic.isKingInCheck(board, currentPlayer)) {
             statusLabel.setText("CHIẾU TƯỚNG!");
         } else {
             statusLabel.setText("Trò chơi đang diễn ra");
         }
 
         updateLabels();
-        drawBoard();
-    }
-
-    private void showValidMoves(int row, int col) {
-        Piece piece = board.getPiece(row, col);
-        if (piece == null) return;
-
-        for (int toRow = 0; toRow < 8; toRow++) {
-            for (int toCol = 0; toCol < 8; toCol++) {
-                Move move = new Move(row, col, toRow, toCol, piece);
-                if (gameLogic.isValidMove(move, currentPlayer)) {
-                    int index = toRow * 8 + toCol;
-                    if (index < chessBoard.getChildren().size()) {
-                        StackPane target = (StackPane) chessBoard.getChildren().get(index);
-                        highlightSquare(target, VALID_MOVE_COLOR);
-                        highlightedSquares.add(target);
-                    }
-                }
-            }
+        if (boardView != null) {
+            boardView.setCurrentPlayer(currentPlayer);
+            boardView.refreshBoard();
         }
-    }
-
-    private void highlightSquare(StackPane square, Color color) {
-        if (square.getChildren().get(0) instanceof Rectangle bg) {
-            bg.setFill(color);
-        }
-    }
-
-    private void clearHighlights() {
-        for (StackPane square : highlightedSquares) {
-            int index = chessBoard.getChildren().indexOf(square);
-            int row = index / 8;
-            int col = index % 8;
-            if (square.getChildren().get(0) instanceof Rectangle bg) {
-                bg.setFill((row + col) % 2 == 0 ? LIGHT_SQUARE : DARK_SQUARE);
-            }
-        }
-        highlightedSquares.clear();
-    }
-
-    private void clearSelection() {
-        clearHighlights();
-        if (selectedSquare != null) {
-            int index = chessBoard.getChildren().indexOf(selectedSquare);
-            int row = index / 8;
-            int col = index % 8;
-            if (selectedSquare.getChildren().get(0) instanceof Rectangle bg) {
-                bg.setFill((row + col) % 2 == 0 ? LIGHT_SQUARE : DARK_SQUARE);
-            }
-        }
-        selectedRow = -1;
-        selectedCol = -1;
-        selectedSquare = null;
     }
 
     // ===================== UI UPDATES =====================
@@ -256,14 +222,62 @@ public class GameController {
         String pieceName = getPieceName(move.getPieceMoved());
         String moveText = pieceName + " " + from + " → " + to;
 
-        if (move.isCastling()) moveText += " (Nhập thành)";
-        else if (move.isEnPassant()) moveText += " (En passant)";
-        else if (move.isPromotion()) moveText += " (Phong hậu)";
+        if (move.isCastling())
+            moveText += " (Nhập thành)";
+        else if (move.isEnPassant())
+            moveText += " (En passant)";
+        else if (move.isPromotion())
+            moveText += " (Phong hậu)";
         else if (move.getPieceCaptured() != null) {
             moveText += " (Ăn " + getPieceName(move.getPieceCaptured()) + ")";
         }
 
         lastMoveLabel.setText(moveText);
+    }
+
+    // ===================== NETWORK SYNC =====================
+    private void sendMoveToPeer(Move move) {
+        if (peerOut == null) return;
+        try {
+            JSONObject json = new JSONObject();
+            json.put("type", "move");
+            json.put("fromRow", move.getFromRow());
+            json.put("fromCol", move.getFromCol());
+            json.put("toRow", move.getToRow());
+            json.put("toCol", move.getToCol());
+            peerOut.println(json.toString());
+            peerOut.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void listenForPeerMoves() {
+        if (peerIn == null) return;
+        try {
+            String line;
+            while ((line = peerIn.readLine()) != null) {
+                try {
+                    JSONObject json = new JSONObject(line);
+                    if (!"move".equals(json.optString("type"))) continue;
+
+                    int fromRow = json.getInt("fromRow");
+                    int fromCol = json.getInt("fromCol");
+                    int toRow = json.getInt("toRow");
+                    int toCol = json.getInt("toCol");
+
+                    Piece piece = board.getPiece(fromRow, fromCol);
+                    if (piece == null) continue;
+
+                    Move move = new Move(fromRow, fromCol, toRow, toCol, piece);
+                    Platform.runLater(() -> executeMove(move, true));
+                } catch (Exception parseEx) {
+                    parseEx.printStackTrace();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // ===================== GAME ACTIONS =====================
@@ -275,7 +289,9 @@ public class GameController {
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                addSystemMessage("Bạn đã đề nghị hòa");
+                if (chatManager != null) {
+                    chatManager.addSystemMessage("Bạn đã đề nghị hòa");
+                }
                 // TODO: Gửi yêu cầu hòa đến server
             }
         });
@@ -292,7 +308,9 @@ public class GameController {
                 Piece.Color winner = playerColor == Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
                 statusLabel.setText("BẠN ĐÃ ĐẦU HÀNG! " + (winner == Piece.Color.WHITE ? "TRẮNG" : "ĐEN") + " THẮNG!");
                 disableGameButtons(false);
-                addSystemMessage("Bạn đã đầu hàng");
+                if (chatManager != null) {
+                    chatManager.addSystemMessage("Bạn đã đầu hàng");
+                }
             }
         });
     }
@@ -302,51 +320,9 @@ public class GameController {
         resignButton.setDisable(!enable);
     }
 
-    // ===================== CHAT FUNCTIONS =====================
-    private void sendMessage() {
-        String message = chatInput.getText().trim();
-        if (!message.isEmpty()) {
-            addChatMessage("Bạn", message, true);
-            chatInput.clear();
-            // TODO: Gửi tin nhắn đến server
-        }
-    }
-
-    private void addChatMessage(String sender, String message, boolean isPlayer) {
-        HBox messageBox = new HBox(5);
-        messageBox.setAlignment(isPlayer ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
-
-        VBox bubble = new VBox(3);
-        bubble.setStyle("-fx-background-color: " + (isPlayer ? "#4a9eff" : "#4a4541") + ";" +
-                "-fx-background-radius: 8; -fx-padding: 8 12 8 12;");
-
-        Label senderLabel = new Label(sender);
-        senderLabel.setStyle("-fx-text-fill: #f0d9b5; -fx-font-size: 11px; -fx-font-weight: bold;");
-
-        Label messageLabel = new Label(message);
-        messageLabel.setWrapText(true);
-        messageLabel.setMaxWidth(220);
-        messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-
-        bubble.getChildren().addAll(senderLabel, messageLabel);
-        messageBox.getChildren().add(bubble);
-        chatMessagesBox.getChildren().add(messageBox);
-
-        Platform.runLater(() -> chatScrollPane.setVvalue(1.0));
-    }
-
-    private void addSystemMessage(String message) {
-        Label systemMsg = new Label(message);
-        systemMsg.setStyle("-fx-text-fill: #999; -fx-font-size: 11px; -fx-font-style: italic; -fx-padding: 5 0 5 0;");
-        systemMsg.setAlignment(Pos.CENTER);
-        systemMsg.setMaxWidth(Double.MAX_VALUE);
-        chatMessagesBox.getChildren().add(systemMsg);
-        Platform.runLater(() -> chatScrollPane.setVvalue(1.0));
-    }
-
     // ===================== HELPER METHODS =====================
     private String getSquareName(int row, int col) {
-        return "" + (char)('a' + col) + (8 - row);
+        return "" + (char) ('a' + col) + (8 - row);
     }
 
     private String getPieceName(Piece piece) {
