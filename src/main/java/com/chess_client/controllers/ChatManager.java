@@ -11,8 +11,7 @@ import javafx.scene.layout.VBox;
 
 /**
  * Quản lý phần chat trong màn hình game.
- * Lớp này chỉ xử lý UI chat phía client, việc gửi/nhận tin nhắn từ server
- * sẽ được tích hợp sau (thông qua callback hoặc service).
+ * Lớp này xử lý UI chat phía client và gửi/nhận tin nhắn qua callback.
  */
 public class ChatManager {
 
@@ -20,6 +19,7 @@ public class ChatManager {
     private final VBox chatMessagesBox;
     private final TextField chatInput;
     private final Button sendMessageButton;
+    private java.util.function.Consumer<String> onSendMessage;
 
     public ChatManager(ScrollPane chatScrollPane,
             VBox chatMessagesBox,
@@ -29,6 +29,13 @@ public class ChatManager {
         this.chatMessagesBox = chatMessagesBox;
         this.chatInput = chatInput;
         this.sendMessageButton = sendMessageButton;
+    }
+
+    /**
+     * Set callback để gửi tin nhắn qua network
+     */
+    public void setOnSendMessage(java.util.function.Consumer<String> onSendMessage) {
+        this.onSendMessage = onSendMessage;
     }
 
     public void initialize() {
@@ -46,14 +53,16 @@ public class ChatManager {
 
     /**
      * Gửi tin nhắn từ người chơi.
-     * Hiện tại chỉ hiển thị trên UI, TODO: tích hợp gửi lên server.
      */
     public void sendMessage() {
         String message = chatInput.getText().trim();
         if (!message.isEmpty()) {
             addChatMessage("Bạn", message, true);
             chatInput.clear();
-            // TODO: Gửi tin nhắn đến server
+            // Gửi tin nhắn qua network nếu có callback
+            if (onSendMessage != null) {
+                onSendMessage.accept(message);
+            }
         }
     }
 

@@ -139,8 +139,6 @@ public class BoardView {
             selectedRow = row;
             selectedCol = col;
             highlightSquare(square, SELECTED_COLOR);
-            // Lưu cả ô quân đang chọn để khi đổi quân sẽ xóa highlight
-            highlightedSquares.add(square);
             showValidMoves(row, col);
         } else {
             clearSelection();
@@ -174,8 +172,7 @@ public class BoardView {
      */
     private StackPane getSquareAtDisplay(int displayRow, int displayCol) {
         for (Node node : chessBoard.getChildren()) {
-            if (!(node instanceof StackPane square))
-                continue;
+            if (!(node instanceof StackPane square)) continue;
             Integer r = GridPane.getRowIndex(square);
             Integer c = GridPane.getColumnIndex(square);
             int row = r == null ? 0 : r;

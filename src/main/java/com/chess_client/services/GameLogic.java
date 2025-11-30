@@ -324,10 +324,7 @@ public class GameLogic {
         return validMoves;
     }
 
-    /**
-     * Kiểm tra trên bàn cờ hiện tại còn vua của màu cho trước hay không.
-     * Dùng để xác định bên nào đã bị mất vua (thua cuộc).
-     */
+    // Kiểm tra xem màu quân cờ có còn vua trên bàn cờ không
     public boolean hasKing(Piece.Color color) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {

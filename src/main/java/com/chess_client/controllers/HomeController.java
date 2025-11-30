@@ -161,16 +161,19 @@ public class HomeController {
                         ? Piece.Color.WHITE
                         : Piece.Color.BLACK;
 
-                // Lấy tên mình từ TokenStorage và tên đối thủ từ response
-                String myName = TokenStorage.getDisplayName();
-                JSONObject opponent = res.getJSONObject("opponent");
-                String opponentName = opponent.optString("display_name",
-                        opponent.optString("username", "Đối thủ"));
-
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/game.fxml"));
                 Parent root = loader.load();
                 GameController controller = loader.getController();
-                controller.setPlayerNames(myName, opponentName);
+
+                // Lấy thông tin game và đối thủ
+                String gameId = res.optString("gameId", null);
+                JSONObject opponent = res.getJSONObject("opponent");
+                String opponentName = opponent.optString("display_name", opponent.optString("username", "Đối thủ"));
+
+                // Lấy tên người chơi hiện tại - sẽ lấy từ API profile hoặc để mặc định
+                String playerName = "Bạn"; // Mặc định, có thể lấy từ API profile sau
+
+                controller.setGameInfo(gameId, opponentName, playerName);
                 controller.setPlayerColor(color);
                 controller.setPeerSocket(socket);
 

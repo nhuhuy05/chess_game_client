@@ -34,7 +34,11 @@ public class GameController {
     @FXML
     private Label opponentPlayerLabel;
     @FXML
+    private Label opponentNameLabel;
+    @FXML
     private Label playerLabel;
+    @FXML
+    private Label playerNameLabel;
 
     // ===================== UI COMPONENTS - GAME INFO =====================
     @FXML
@@ -68,12 +72,13 @@ public class GameController {
     private GameLogic gameLogic;
     private Piece.Color currentPlayer;
     private Piece.Color playerColor;
-    private String playerName;
-    private String opponentName;
     private List<Move> moveHistory;
     private Socket peerSocket;
     private BufferedReader peerIn;
     private PrintWriter peerOut;
+    private String gameId;
+    private String opponentName;
+    private String playerName;
 
     // ===================== INITIALIZATION =====================
     @FXML
@@ -91,16 +96,18 @@ public class GameController {
 
         // Khởi tạo quản lý chat
         chatManager = new ChatManager(chatScrollPane, chatMessagesBox, chatInput, sendMessageButton);
+        chatManager.setOnSendMessage(this::sendChatMessage);
         chatManager.initialize();
     }
 
     /**
-     * Được gọi từ HomeController sau khi ghép trận để set tên người chơi và đối thủ.
+     * Được gọi từ HomeController sau khi ghép trận để set gameId và tên đối thủ.
      */
-    public void setPlayerNames(String playerName, String opponentName) {
-        this.playerName = playerName;
+    public void setGameInfo(String gameId, String opponentName, String playerName) {
+        this.gameId = gameId;
         this.opponentName = opponentName;
-        updatePlayerLabels();
+        this.playerName = playerName;
+        updatePlayerInfo();
     }
 
     /**
@@ -128,8 +135,8 @@ public class GameController {
             e.printStackTrace();
         }
 
-        // Lắng nghe nước đi từ đối thủ ở thread riêng
-        Thread listener = new Thread(this::listenForPeerMoves);
+        // Lắng nghe nước đi và chat từ đối thủ ở thread riêng
+        Thread listener = new Thread(this::listenForPeerMessages);
         listener.setDaemon(true);
         listener.start();
     }
@@ -153,11 +160,23 @@ public class GameController {
 
     private void updatePlayerLabels() {
         if (playerColor == Piece.Color.WHITE) {
-            playerLabel.setText("Quân Trắng\n" + (playerName != null ? playerName : "Bạn"));
-            opponentPlayerLabel.setText("Quân Đen\n" + (opponentName != null ? opponentName : "Đối thủ"));
+            playerLabel.setText("Quân Trắng");
+            opponentPlayerLabel.setText("Quân Đen");
         } else {
-            playerLabel.setText("Quân Đen\n" + (playerName != null ? playerName : "Bạn"));
-            opponentPlayerLabel.setText("Quân Trắng\n" + (opponentName != null ? opponentName : "Đối thủ"));
+            playerLabel.setText("Quân Đen");
+            opponentPlayerLabel.setText("Quân Trắng");
+        }
+    }
+
+    private void updatePlayerInfo() {
+        // Cập nhật thông tin người chơi
+        if (playerNameLabel != null) {
+            playerNameLabel.setText(playerName != null ? playerName : "Bạn");
+        }
+
+        // Cập nhật thông tin đối thủ
+        if (opponentNameLabel != null) {
+            opponentNameLabel.setText(opponentName != null ? opponentName : "Đối thủ");
         }
     }
 
@@ -166,7 +185,8 @@ public class GameController {
     }
 
     /**
-     * @param fromNetwork true nếu nước đi đến từ socket P2P (không gửi lại tránh vòng lặp)
+     * @param fromNetwork true nếu nước đi đến từ socket P2P (không gửi lại tránh
+     *                    vòng lặp)
      */
     private void executeMove(Move move, boolean fromNetwork) {
         board.movePiece(move);
@@ -177,28 +197,32 @@ public class GameController {
             sendMoveToPeer(move);
         }
 
-        // Sau khi đi xong, kiểm tra xem bên nào đã mất vua
+        currentPlayer = currentPlayer == Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
+
+        // Kiểm tra vua có bị ăn không
         boolean whiteHasKing = gameLogic.hasKing(Piece.Color.WHITE);
         boolean blackHasKing = gameLogic.hasKing(Piece.Color.BLACK);
 
         if (!whiteHasKing || !blackHasKing) {
             Piece.Color winner = whiteHasKing ? Piece.Color.WHITE : Piece.Color.BLACK;
-            statusLabel.setText("VUA BỊ ĂN! " + (winner == Piece.Color.WHITE ? "TRẮNG" : "ĐEN") + " THẮNG!");
+            String winnerText = winner == Piece.Color.WHITE ? "TRẮNG" : "ĐEN";
+            statusLabel.setText("VUA BỊ ĂN! " + winnerText + " THẮNG!");
             disableGameButtons(false);
-
-            // Ngừng cho phép tiếp tục đi cờ
-            if (boardView != null) {
-                boardView.setCurrentPlayer(null);
-                boardView.refreshBoard();
-            }
+            endGame(winner);
             return;
         }
 
-        // Nếu cả hai bên vẫn còn vua, tiếp tục ván đấu như bình thường
-        currentPlayer = currentPlayer == Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
-
-        // Hiển thị trạng thái chiếu tướng (chỉ để báo, không giới hạn nước đi)
-        if (gameLogic.isKingInCheck(board, currentPlayer)) {
+        if (gameLogic.isCheckmate(currentPlayer)) {
+            Piece.Color winner = currentPlayer == Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
+            String winnerText = winner == Piece.Color.WHITE ? "TRẮNG" : "ĐEN";
+            statusLabel.setText("CHIẾU HẾT! " + winnerText + " THẮNG!");
+            disableGameButtons(false);
+            endGame(winner);
+        } else if (gameLogic.isStalemate(currentPlayer)) {
+            statusLabel.setText("HÒA CỜ (Stalemate)");
+            disableGameButtons(false);
+            endGame(null); // null = hòa
+        } else if (gameLogic.isKingInCheck(board, currentPlayer)) {
             statusLabel.setText("CHIẾU TƯỚNG!");
         } else {
             statusLabel.setText("Trò chơi đang diễn ra");
@@ -237,7 +261,8 @@ public class GameController {
 
     // ===================== NETWORK SYNC =====================
     private void sendMoveToPeer(Move move) {
-        if (peerOut == null) return;
+        if (peerOut == null)
+            return;
         try {
             JSONObject json = new JSONObject();
             json.put("type", "move");
@@ -252,31 +277,130 @@ public class GameController {
         }
     }
 
-    private void listenForPeerMoves() {
-        if (peerIn == null) return;
+    private void listenForPeerMessages() {
+        if (peerIn == null)
+            return;
         try {
             String line;
             while ((line = peerIn.readLine()) != null) {
                 try {
                     JSONObject json = new JSONObject(line);
-                    if (!"move".equals(json.optString("type"))) continue;
+                    String type = json.optString("type");
 
-                    int fromRow = json.getInt("fromRow");
-                    int fromCol = json.getInt("fromCol");
-                    int toRow = json.getInt("toRow");
-                    int toCol = json.getInt("toCol");
+                    if ("move".equals(type)) {
+                        int fromRow = json.getInt("fromRow");
+                        int fromCol = json.getInt("fromCol");
+                        int toRow = json.getInt("toRow");
+                        int toCol = json.getInt("toCol");
 
-                    Piece piece = board.getPiece(fromRow, fromCol);
-                    if (piece == null) continue;
+                        Piece piece = board.getPiece(fromRow, fromCol);
+                        if (piece == null)
+                            continue;
 
-                    Move move = new Move(fromRow, fromCol, toRow, toCol, piece);
-                    Platform.runLater(() -> executeMove(move, true));
+                        Move move = new Move(fromRow, fromCol, toRow, toCol, piece);
+                        Platform.runLater(() -> executeMove(move, true));
+                    } else if ("chat".equals(type)) {
+                        String message = json.getString("message");
+                        Platform.runLater(() -> {
+                            if (chatManager != null) {
+                                chatManager.addChatMessage(opponentName != null ? opponentName : "Đối thủ", message,
+                                        false);
+                            }
+                        });
+                    } else if ("game_action".equals(type)) {
+                        String action = json.getString("action");
+                        Platform.runLater(() -> handleGameAction(action));
+                    }
                 } catch (Exception parseEx) {
                     parseEx.printStackTrace();
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void sendChatMessage(String message) {
+        if (peerOut == null)
+            return;
+        try {
+            JSONObject json = new JSONObject();
+            json.put("type", "chat");
+            json.put("message", message);
+            peerOut.println(json.toString());
+            peerOut.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendGameAction(String action) {
+        if (peerOut == null)
+            return;
+        try {
+            JSONObject json = new JSONObject();
+            json.put("type", "game_action");
+            json.put("action", action);
+            peerOut.println(json.toString());
+            peerOut.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleGameAction(String action) {
+        if ("resign".equals(action)) {
+            // Đối thủ đã đầu hàng
+            Piece.Color winner = playerColor; // Bạn thắng vì đối thủ đầu hàng
+            String winnerText = winner == Piece.Color.WHITE ? "TRẮNG" : "ĐEN";
+            statusLabel.setText("ĐỐI THỦ ĐÃ ĐẦU HÀNG! " + winnerText + " THẮNG!");
+            disableGameButtons(false);
+            if (chatManager != null) {
+                chatManager.addSystemMessage("Đối thủ đã đầu hàng");
+            }
+            endGame(winner);
+        } else if ("offer_draw".equals(action)) {
+            // Đối thủ đề nghị hòa
+            if (chatManager != null) {
+                chatManager.addSystemMessage("Đối thủ đề nghị hòa");
+            }
+
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Đề nghị hòa");
+            alert.setHeaderText("Đối thủ đề nghị hòa");
+            alert.setContentText("Bạn có chấp nhận hòa không?");
+
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    // Chấp nhận hòa
+                    if (chatManager != null) {
+                        chatManager.addSystemMessage("Bạn đã chấp nhận hòa");
+                    }
+                    statusLabel.setText("TRẬN ĐẤU HÒA!");
+                    disableGameButtons(false);
+                    sendGameAction("accept_draw");
+                    endGame(null); // null = hòa
+                } else {
+                    // Từ chối hòa
+                    if (chatManager != null) {
+                        chatManager.addSystemMessage("Bạn đã từ chối hòa");
+                    }
+                    sendGameAction("reject_draw");
+                }
+            });
+        } else if ("accept_draw".equals(action)) {
+            // Đối thủ đã chấp nhận hòa
+            statusLabel.setText("TRẬN ĐẤU HÒA!");
+            disableGameButtons(false);
+            if (chatManager != null) {
+                chatManager.addSystemMessage("Đối thủ đã chấp nhận hòa");
+            }
+            endGame(null); // null = hòa
+        } else if ("reject_draw".equals(action)) {
+            // Đối thủ đã từ chối hòa
+            if (chatManager != null) {
+                chatManager.addSystemMessage("Đối thủ đã từ chối hòa");
+            }
         }
     }
 
@@ -292,7 +416,8 @@ public class GameController {
                 if (chatManager != null) {
                     chatManager.addSystemMessage("Bạn đã đề nghị hòa");
                 }
-                // TODO: Gửi yêu cầu hòa đến server
+                // Gửi yêu cầu hòa qua P2P
+                sendGameAction("offer_draw");
             }
         });
     }
@@ -306,13 +431,101 @@ public class GameController {
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 Piece.Color winner = playerColor == Piece.Color.WHITE ? Piece.Color.BLACK : Piece.Color.WHITE;
-                statusLabel.setText("BẠN ĐÃ ĐẦU HÀNG! " + (winner == Piece.Color.WHITE ? "TRẮNG" : "ĐEN") + " THẮNG!");
+                String winnerText = winner == Piece.Color.WHITE ? "TRẮNG" : "ĐEN";
+                statusLabel.setText("BẠN ĐÃ ĐẦU HÀNG! " + winnerText + " THẮNG!");
                 disableGameButtons(false);
                 if (chatManager != null) {
                     chatManager.addSystemMessage("Bạn đã đầu hàng");
                 }
+                // Gửi thông báo đầu hàng qua P2P
+                sendGameAction("resign");
+                endGame(winner);
             }
         });
+    }
+
+    private void endGame(Piece.Color winner) {
+        if (boardView != null) {
+            boardView.setCurrentPlayer(null);
+            boardView.refreshBoard();
+        }
+
+        // Gọi API để cập nhật game và ranking
+        new Thread(() -> {
+            try {
+                updateGameOnServer(winner);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        // Hiển thị dialog thông báo kết thúc
+        Platform.runLater(() -> {
+            String message;
+            if (winner == null) {
+                message = "Trận đấu kết thúc HÒA!";
+            } else if (winner == playerColor) {
+                message = "CHÚC MỪNG! Bạn đã THẮNG!";
+            } else {
+                message = "Bạn đã THUA trận đấu này.";
+            }
+
+            Alert endAlert = new Alert(Alert.AlertType.INFORMATION);
+            endAlert.setTitle("Kết thúc trận đấu");
+            endAlert.setHeaderText(null);
+            endAlert.setContentText(message);
+            endAlert.showAndWait();
+
+            // Quay về trang chủ
+            returnToHome();
+        });
+    }
+
+    private void updateGameOnServer(Piece.Color winner) {
+        if (gameId == null || gameId.isEmpty())
+            return;
+
+        try {
+            String token = com.chess_client.services.TokenStorage.getAccessToken();
+            if (token == null || token.isEmpty())
+                return;
+
+            java.net.URI uri = java.net.URI.create("http://localhost:3000/api/games/" + gameId + "/end");
+            JSONObject body = new JSONObject();
+            if (winner != null) {
+                // Xác định winner_id dựa trên màu thắng
+                body.put("winnerColor", winner == Piece.Color.WHITE ? "white" : "black");
+            } else {
+                body.put("result", "draw");
+            }
+
+            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + token)
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body.toString()))
+                    .build();
+
+            java.net.http.HttpResponse<String> response = client.send(request,
+                    java.net.http.HttpResponse.BodyHandlers.ofString());
+            System.out.println("Game update response: " + response.statusCode() + " - " + response.body());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void returnToHome() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/com/chess_client/fxml/home.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root);
+            javafx.stage.Stage stage = (javafx.stage.Stage) chessBoard.getScene().getWindow();
+            stage.setScene(scene);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void disableGameButtons(boolean enable) {

@@ -3,14 +3,24 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane style="-fx-font-family: 'Segoe UI', Arial, sans-serif; -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chess_client.controllers.GameController">
+<BorderPane
+    style="-fx-font-family: 'Segoe UI', Arial, sans-serif; -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);"
+    xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.chess_client.controllers.GameController">
 
     <!-- ===================== -->
     <!-- TOP: ĐỐI THỦ -->
     <!-- ===================== -->
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #1a1a2e; -fx-padding: 15;">
-            <Label fx:id="opponentPlayerLabel" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" text="Quân Đen" />
+        <HBox alignment="CENTER_LEFT" spacing="15"
+            style="-fx-background-color: #1a1a2e; -fx-padding: 15;">
+            <VBox spacing="3" alignment="CENTER_LEFT">
+                <Label fx:id="opponentNameLabel"
+                    style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"
+                    text="Đối thủ" />
+                <Label fx:id="opponentPlayerLabel"
+                    style="-fx-text-fill: #b0b0b0; -fx-font-size: 12px;" text="Quân Đen" />
+            </VBox>
             <Region HBox.hgrow="ALWAYS" />
         </HBox>
     </top>
@@ -23,49 +33,80 @@
             <!-- BÀN CỜ BÊN TRÁI -->
             <VBox alignment="CENTER" style="-fx-background-color: #1a1a2e; -fx-padding: 20;">
                 <StackPane>
-                    <GridPane fx:id="chessBoard" hgap="0" style="-fx-border-color: #1a1714; -fx-border-width: 2;                                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);" vgap="0" />
+                    <GridPane fx:id="chessBoard" hgap="0"
+                        style="-fx-border-color: #1a1714; -fx-border-width: 2;                                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);"
+                        vgap="0" />
                 </StackPane>
             </VBox>
 
             <!-- SIDEBAR BÊN PHẢI -->
-            <VBox prefWidth="320" spacing="10" style="-fx-background-color: #1a1a2e; -fx-padding: 15;">
+            <VBox prefWidth="320" spacing="10"
+                style="-fx-background-color: #1a1a2e; -fx-padding: 15;">
 
                 <!-- LƯỢT ĐI -->
-                <VBox spacing="5" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-padding: 12; -fx-background-radius: 5;">
-                    <Label fx:id="turnLabel" style="-fx-text-fill: #f0d9b5; -fx-font-size: 16px; -fx-font-weight: bold;" text="Lượt đi: TRẮNG" />
+                <VBox spacing="5"
+                    style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-padding: 12; -fx-background-radius: 5;">
+                    <Label fx:id="turnLabel"
+                        style="-fx-text-fill: #f0d9b5; -fx-font-size: 16px; -fx-font-weight: bold;"
+                        text="Lượt đi: TRẮNG" />
                 </VBox>
 
                 <!-- TRẠNG THÁI -->
-                <VBox spacing="5" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-padding: 12; -fx-background-radius: 5;">
-                    <Label style="-fx-text-fill: #f0d9b5; -fx-font-size: 14px; -fx-font-weight: bold;" text="Trạng thái" />
-                    <Label fx:id="statusLabel" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-wrap-text: true;" text="Trò chơi bắt đầu" />
+                <VBox spacing="5"
+                    style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-padding: 12; -fx-background-radius: 5;">
+                    <Label
+                        style="-fx-text-fill: #f0d9b5; -fx-font-size: 14px; -fx-font-weight: bold;"
+                        text="Trạng thái" />
+                    <Label fx:id="statusLabel"
+                        style="-fx-text-fill: white; -fx-font-size: 13px; -fx-wrap-text: true;"
+                        text="Trò chơi bắt đầu" />
                 </VBox>
 
                 <!-- NƯỚC ĐI CUỐI -->
-                <VBox spacing="5" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-padding: 12; -fx-background-radius: 5;">
-                    <Label style="-fx-text-fill: #f0d9b5; -fx-font-size: 14px; -fx-font-weight: bold;" text="Nước đi cuối" />
-                    <Label fx:id="lastMoveLabel" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-wrap-text: true;" text="Chưa có" />
+                <VBox spacing="5"
+                    style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-padding: 12; -fx-background-radius: 5;">
+                    <Label
+                        style="-fx-text-fill: #f0d9b5; -fx-font-size: 14px; -fx-font-weight: bold;"
+                        text="Nước đi cuối" />
+                    <Label fx:id="lastMoveLabel"
+                        style="-fx-text-fill: white; -fx-font-size: 13px; -fx-wrap-text: true;"
+                        text="Chưa có" />
                 </VBox>
 
                 <!-- CÁC NÚT ĐIỀU KHIỂN -->
                 <VBox spacing="8">
-                    <Button fx:id="drawButton" maxWidth="Infinity" style="-fx-background-color: #4a9eff; -fx-text-fill: white;                                    -fx-font-size: 14px; -fx-padding: 10; -fx-background-radius: 5; -fx-cursor: hand;" text="Cầu hòa" />
-                    <Button fx:id="resignButton" maxWidth="Infinity" style="-fx-background-color: #e74c3c; -fx-text-fill: white;                                    -fx-font-size: 14px; -fx-padding: 10; -fx-background-radius: 5; -fx-cursor: hand;" text="Nhận thua" />
+                    <Button fx:id="drawButton" maxWidth="Infinity"
+                        style="-fx-background-color: #4a9eff; -fx-text-fill: white;                                    -fx-font-size: 14px; -fx-padding: 10; -fx-background-radius: 5; -fx-cursor: hand;"
+                        text="Cầu hòa" />
+                    <Button fx:id="resignButton" maxWidth="Infinity"
+                        style="-fx-background-color: #e74c3c; -fx-text-fill: white;                                    -fx-font-size: 14px; -fx-padding: 10; -fx-background-radius: 5; -fx-cursor: hand;"
+                        text="Nhận thua" />
                 </VBox>
 
                 <!-- CHAT BOX -->
-                <VBox spacing="8" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-padding: 12; -fx-background-radius: 5;" VBox.vgrow="ALWAYS">
-                    <Label style="-fx-text-fill: #f0d9b5; -fx-font-size: 14px; -fx-font-weight: bold;" text="Chat" />
+                <VBox spacing="8"
+                    style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-padding: 12; -fx-background-radius: 5;"
+                    VBox.vgrow="ALWAYS">
+                    <Label
+                        style="-fx-text-fill: #f0d9b5; -fx-font-size: 14px; -fx-font-weight: bold;"
+                        text="Chat" />
 
                     <!-- Khu vực hiển thị tin nhắn -->
-                    <ScrollPane fx:id="chatScrollPane" fitToWidth="true" style="-fx-background: #1a1714; -fx-background-color: #1a1714;                                        -fx-border-color: #0d0c0b; -fx-border-width: 1;" VBox.vgrow="ALWAYS">
-                        <VBox fx:id="chatMessagesBox" spacing="5" style="-fx-padding: 8; -fx-background-color: #1a1714;" />
+                    <ScrollPane fx:id="chatScrollPane" fitToWidth="true"
+                        style="-fx-background: #1a1714; -fx-background-color: #1a1714;                                        -fx-border-color: #0d0c0b; -fx-border-width: 1;"
+                        VBox.vgrow="ALWAYS">
+                        <VBox fx:id="chatMessagesBox" spacing="5"
+                            style="-fx-padding: 8; -fx-background-color: #1a1714;" />
                     </ScrollPane>
 
                     <!-- Ô nhập tin nhắn -->
                     <HBox spacing="5">
-                        <TextField fx:id="chatInput" promptText="Nhập tin nhắn..." style="-fx-background-color: #1a1714; -fx-text-fill: white;                                           -fx-prompt-text-fill: #666; -fx-border-color: #0d0c0b;                                           -fx-border-width: 1; -fx-padding: 8; -fx-background-radius: 3;" HBox.hgrow="ALWAYS" />
-                        <Button fx:id="sendMessageButton" style="-fx-background-color: #4a9eff; -fx-text-fill: white;                                        -fx-font-size: 12px; -fx-padding: 8 15 8 15;                                        -fx-background-radius: 3; -fx-cursor: hand;" text="Gửi" />
+                        <TextField fx:id="chatInput" promptText="Nhập tin nhắn..."
+                            style="-fx-background-color: #1a1714; -fx-text-fill: white;                                           -fx-prompt-text-fill: #666; -fx-border-color: #0d0c0b;                                           -fx-border-width: 1; -fx-padding: 8; -fx-background-radius: 3;"
+                            HBox.hgrow="ALWAYS" />
+                        <Button fx:id="sendMessageButton"
+                            style="-fx-background-color: #4a9eff; -fx-text-fill: white;                                        -fx-font-size: 12px; -fx-padding: 8 15 8 15;                                        -fx-background-radius: 3; -fx-cursor: hand;"
+                            text="Gửi" />
                     </HBox>
                 </VBox>
             </VBox>
@@ -76,8 +117,15 @@
     <!-- BOTTOM: NGƯỜI CHƠI -->
     <!-- ===================== -->
     <bottom>
-        <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #1a1a2e; -fx-padding: 15;">
-            <Label fx:id="playerLabel" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" text="Quân Trắng" />
+        <HBox alignment="CENTER_LEFT" spacing="15"
+            style="-fx-background-color: #1a1a2e; -fx-padding: 15;">
+            <VBox spacing="3" alignment="CENTER_LEFT">
+                <Label fx:id="playerNameLabel"
+                    style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"
+                    text="Bạn" />
+                <Label fx:id="playerLabel" style="-fx-text-fill: #b0b0b0; -fx-font-size: 12px;"
+                    text="Quân Trắng" />
+            </VBox>
             <Region HBox.hgrow="ALWAYS" />
         </HBox>
     </bottom>
