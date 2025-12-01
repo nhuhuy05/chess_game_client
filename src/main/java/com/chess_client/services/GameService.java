@@ -19,11 +19,11 @@ public class GameService {
     private final HttpClient httpClient;
 
     public GameService() {
-        this("http://localhost:5000");
+        this(ApiConfig.BASE_URL);
     }
 
     public GameService(String baseUrl) {
-        this.baseUrl = baseUrl;
+        this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.httpClient = HttpClient.newHttpClient();
     }
 

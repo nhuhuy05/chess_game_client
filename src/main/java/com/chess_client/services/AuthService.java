@@ -7,7 +7,7 @@ import java.net.http.HttpResponse;
 import org.json.JSONObject;
 
 public class AuthService {
-    private static final String BASE_URL = "http://localhost:5000/api/auth";
+    private static final String BASE_URL = ApiConfig.AUTH_BASE;
 
     public static JSONObject signIn(String username, String password) {
         try {

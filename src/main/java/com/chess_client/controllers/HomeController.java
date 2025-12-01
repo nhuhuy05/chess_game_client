@@ -2,6 +2,7 @@ package com.chess_client.controllers;
 
 import com.chess_client.models.Piece;
 import com.chess_client.services.AuthService;
+import com.chess_client.services.ApiConfig;
 import com.chess_client.services.HomeMatchmakingResult;
 import com.chess_client.services.HomeService;
 import com.chess_client.services.TokenStorage;
@@ -63,7 +64,7 @@ public class HomeController {
 
         new Thread(() -> {
             try {
-                HomeService homeService = new HomeService("http://localhost:5000/api/matchmaking", token);
+                HomeService homeService = new HomeService(ApiConfig.MATCHMAKING_BASE, token);
                 HomeMatchmakingResult result = homeService.startRandomMatch();
 
                 Platform.runLater(() -> {
