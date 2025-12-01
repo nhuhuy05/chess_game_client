@@ -11,6 +11,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -135,7 +136,48 @@ public class HomeController {
 
     @FXML
     private void handlePlayComputer() {
-        System.out.println("Chơi với máy đã được chọn");
+        // Hiển thị dialog chọn độ khó
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("Dễ", java.util.List.of("Dễ", "Trung bình", "Khó"));
+        dialog.setTitle("Chọn mức độ");
+        dialog.setHeaderText("Chơi với máy");
+        dialog.setContentText("Chọn độ khó:");
+        dialog.initOwner(btnComputer.getScene().getWindow());
+
+        dialog.showAndWait().ifPresent(choice -> {
+            int difficulty;
+            String opponentName;
+            switch (choice) {
+                case "Trung bình" -> {
+                    difficulty = 2;
+                    opponentName = "Máy (Trung bình)";
+                }
+                case "Khó" -> {
+                    difficulty = 3;
+                    opponentName = "Máy (Khó)";
+                }
+                default -> {
+                    difficulty = 1;
+                    opponentName = "Máy (Dễ)";
+                }
+            }
+
+            try {
+                FXMLLoader loader = new FXMLLoader(
+                        getClass().getResource("/com/chess_client/fxml/game.fxml"));
+                Parent root = loader.load();
+                GameController controller = loader.getController();
+
+                // Thiết lập game chơi với máy: không có gameId server
+                controller.setGameInfo(null, opponentName, "Bạn");
+                controller.setupVsComputer(difficulty, Piece.Color.WHITE);
+
+                Stage stage = (Stage) btnComputer.getScene().getWindow();
+                stage.setScene(new Scene(root));
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert("Lỗi", "Không thể mở màn hình chơi với máy: " + e.getMessage());
+            }
+        });
     }
 
     @FXML

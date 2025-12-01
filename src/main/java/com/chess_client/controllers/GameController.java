@@ -81,6 +81,11 @@ public class GameController {
     private String opponentName;
     private String playerName;
 
+    // Chế độ chơi
+    private boolean vsComputer = false;
+    private Piece.Color aiColor;
+    private int aiDifficulty = 1; // 1: dễ, 2: trung bình, 3: khó
+
     // Service gọi API game server
     private final GameService gameService = new GameService();
 
@@ -112,6 +117,28 @@ public class GameController {
         this.opponentName = opponentName;
         this.playerName = playerName;
         updatePlayerInfo();
+    }
+
+    /**
+     * Thiết lập chế độ chơi với máy.
+     *
+     * @param difficulty 1 = dễ, 2 = trung bình, 3 = khó
+     * @param humanColor màu quân của người chơi (thường là TRẮNG)
+     */
+    public void setupVsComputer(int difficulty, Piece.Color humanColor) {
+        this.vsComputer = true;
+        this.aiDifficulty = difficulty;
+        this.playerColor = humanColor;
+        this.aiColor = (humanColor == Piece.Color.WHITE) ? Piece.Color.BLACK : Piece.Color.WHITE;
+
+        // Cập nhật lại label và boardView nếu đã khởi tạo
+        updatePlayerLabels();
+        updatePlayerInfo();
+        if (boardView != null) {
+            boardView.setPlayerColor(playerColor);
+            boardView.setCurrentPlayer(currentPlayer);
+            boardView.refreshBoard();
+        }
     }
 
     /**
@@ -236,6 +263,17 @@ public class GameController {
         if (boardView != null) {
             boardView.setCurrentPlayer(currentPlayer);
             boardView.refreshBoard();
+        }
+
+        // Nếu đang chơi với máy và đến lượt AI -> AI tự động đi sau một khoảng trễ nhỏ
+        if (vsComputer && currentPlayer == aiColor) {
+            new Thread(() -> {
+                try {
+                    Thread.sleep(600); // delay ~0.6s cho tự nhiên
+                } catch (InterruptedException ignored) {
+                }
+                Platform.runLater(this::makeComputerMove);
+            }).start();
         }
     }
 
@@ -495,6 +533,53 @@ public class GameController {
     private void disableGameButtons(boolean enable) {
         drawButton.setDisable(!enable);
         resignButton.setDisable(!enable);
+    }
+
+    // ===================== COMPUTER PLAYER =====================
+    private void makeComputerMove() {
+        try {
+            List<Move> validMoves = gameLogic.getAllValidMoves(aiColor);
+            if (validMoves.isEmpty()) {
+                // Không còn nước đi hợp lệ -> kiểm tra chiếu hết / hòa
+                if (gameLogic.isCheckmate(aiColor)) {
+                    Piece.Color winner = (aiColor == Piece.Color.WHITE) ? Piece.Color.BLACK : Piece.Color.WHITE;
+                    endGame(winner);
+                } else if (gameLogic.isStalemate(aiColor)) {
+                    endGame(null);
+                }
+                return;
+            }
+
+            Move chosen = chooseMoveByDifficulty(validMoves);
+            if (chosen != null) {
+                executeMove(chosen, false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Move chooseMoveByDifficulty(List<Move> moves) {
+        if (moves.isEmpty()) return null;
+
+        java.util.Random random = new java.util.Random();
+
+        // Dễ: chọn ngẫu nhiên
+        if (aiDifficulty <= 1) {
+            return moves.get(random.nextInt(moves.size()));
+        }
+
+        // Trung bình/Khó: ưu tiên nước ăn quân, nếu không có thì chọn ngẫu nhiên
+        List<Move> capturingMoves = new ArrayList<>();
+        for (Move m : moves) {
+            Piece target = board.getPiece(m.getToRow(), m.getToCol());
+            if (target != null && target.getColor() != aiColor) {
+                capturingMoves.add(m);
+            }
+        }
+
+        List<Move> pool = capturingMoves.isEmpty() ? moves : capturingMoves;
+        return pool.get(random.nextInt(pool.size()));
     }
 
     // ===================== HELPER METHODS =====================
