@@ -63,7 +63,7 @@ public class HomeController {
 
         new Thread(() -> {
             try {
-                HomeService homeService = new HomeService("http://localhost:3000/api/matchmaking", token);
+                HomeService homeService = new HomeService("http://localhost:5000/api/matchmaking", token);
                 HomeMatchmakingResult result = homeService.startRandomMatch();
 
                 Platform.runLater(() -> {

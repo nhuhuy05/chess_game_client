@@ -5,10 +5,18 @@ import com.chess_client.services.TokenStorage;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
+
 import org.json.JSONObject;
 
 public class LoginController {
 
+    private Stage stage;
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+    
     @FXML
     private TextField usernameField;
     @FXML

@@ -19,7 +19,7 @@ public class GameService {
     private final HttpClient httpClient;
 
     public GameService() {
-        this("http://localhost:3000");
+        this("http://localhost:5000");
     }
 
     public GameService(String baseUrl) {
