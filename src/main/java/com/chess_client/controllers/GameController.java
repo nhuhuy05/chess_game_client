@@ -131,6 +131,12 @@ public class GameController {
         this.playerColor = humanColor;
         this.aiColor = (humanColor == Piece.Color.WHITE) ? Piece.Color.BLACK : Piece.Color.WHITE;
 
+        // Chơi với máy thì không cho cầu hòa
+        if (drawButton != null) {
+            drawButton.setDisable(true);
+            drawButton.setVisible(false);
+        }
+
         // Cập nhật lại label và boardView nếu đã khởi tạo
         updatePlayerLabels();
         updatePlayerInfo();
@@ -253,15 +259,22 @@ public class GameController {
             statusLabel.setText("HÒA CỜ (Stalemate)");
             disableGameButtons(false);
             endGame(null); // null = hòa
-        } else if (gameLogic.isKingInCheck(board, currentPlayer)) {
-            statusLabel.setText("CHIẾU TƯỚNG!");
         } else {
-            statusLabel.setText("Trò chơi đang diễn ra");
+            // Kiểm tra xem có vua nào đang bị chiếu không
+            boolean whiteInCheck = gameLogic.isKingInCheck(board, Piece.Color.WHITE);
+            boolean blackInCheck = gameLogic.isKingInCheck(board, Piece.Color.BLACK);
+
+            if (whiteInCheck || blackInCheck) {
+                statusLabel.setText("CHIẾU TƯỚNG!");
+            } else {
+                statusLabel.setText("Trò chơi đang diễn ra");
+            }
         }
 
         updateLabels();
         if (boardView != null) {
             boardView.setCurrentPlayer(currentPlayer);
+            boardView.setLastMove(move);
             boardView.refreshBoard();
         }
 
@@ -288,6 +301,20 @@ public class GameController {
         String pieceName = getPieceName(move.getPieceMoved());
         String moveText = pieceName + " " + from + " → " + to;
 
+        // Xác định bên nào vừa đi: Bạn / Đối thủ / Máy
+        String prefix;
+        Piece.Color moverColor = move.getPieceMoved().getColor();
+        boolean isPlayerMove = moverColor == playerColor;
+        boolean isAiMove = vsComputer && moverColor == aiColor;
+
+        if (isAiMove) {
+            prefix = "Máy: ";
+        } else if (isPlayerMove) {
+            prefix = "Bạn: ";
+        } else {
+            prefix = "Đối thủ: ";
+        }
+
         if (move.isCastling())
             moveText += " (Nhập thành)";
         else if (move.isEnPassant())
@@ -298,7 +325,7 @@ public class GameController {
             moveText += " (Ăn " + getPieceName(move.getPieceCaptured()) + ")";
         }
 
-        lastMoveLabel.setText(moveText);
+        lastMoveLabel.setText(prefix + moveText);
     }
 
     // ===================== NETWORK SYNC =====================

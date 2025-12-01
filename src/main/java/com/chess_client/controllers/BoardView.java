@@ -34,6 +34,7 @@ public class BoardView {
     private int selectedRow = -1;
     private int selectedCol = -1;
     private final List<StackPane> highlightedSquares = new ArrayList<>();
+    private Move lastMove;
 
     // ===================== CONSTANTS =====================
     private static final int SQUARE_SIZE = 70;
@@ -61,6 +62,10 @@ public class BoardView {
 
     public void setCurrentPlayer(Piece.Color currentPlayer) {
         this.currentPlayer = currentPlayer;
+    }
+
+    public void setLastMove(Move lastMove) {
+        this.lastMove = lastMove;
     }
 
     public void refreshBoard() {
@@ -94,7 +99,18 @@ public class BoardView {
 
         // Background color
         Rectangle background = new Rectangle(SQUARE_SIZE, SQUARE_SIZE);
-        background.setFill((row + col) % 2 == 0 ? LIGHT_SQUARE : DARK_SQUARE);
+        Color baseColor = (row + col) % 2 == 0 ? LIGHT_SQUARE : DARK_SQUARE;
+
+        // Highlight nhẹ nước đi cuối (from/to)
+        if (lastMove != null &&
+                ((row == lastMove.getFromRow() && col == lastMove.getFromCol()) ||
+                        (row == lastMove.getToRow() && col == lastMove.getToCol()))) {
+            // Pha trộn màu nền với một chút vàng nhạt
+            Color highlight = Color.web("#f7ec88", 0.6);
+            background.setFill(baseColor.interpolate(highlight, 0.4));
+        } else {
+            background.setFill(baseColor);
+        }
         square.getChildren().add(background);
 
         // Piece
