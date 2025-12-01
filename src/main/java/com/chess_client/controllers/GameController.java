@@ -4,6 +4,7 @@ import com.chess_client.models.Board;
 import com.chess_client.models.Move;
 import com.chess_client.models.Piece;
 import com.chess_client.services.GameLogic;
+import com.chess_client.services.GameService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -79,6 +80,9 @@ public class GameController {
     private String gameId;
     private String opponentName;
     private String playerName;
+
+    // Service gọi API game server
+    private final GameService gameService = new GameService();
 
     // ===================== INITIALIZATION =====================
     @FXML
@@ -450,14 +454,8 @@ public class GameController {
             boardView.refreshBoard();
         }
 
-        // Gọi API để cập nhật game và ranking
-        new Thread(() -> {
-            try {
-                updateGameOnServer(winner);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
+        // Gọi API để cập nhật game và ranking (qua GameService)
+        new Thread(() -> gameService.endGame(gameId, winner)).start();
 
         // Hiển thị dialog thông báo kết thúc
         Platform.runLater(() -> {
@@ -479,40 +477,6 @@ public class GameController {
             // Quay về trang chủ
             returnToHome();
         });
-    }
-
-    private void updateGameOnServer(Piece.Color winner) {
-        if (gameId == null || gameId.isEmpty())
-            return;
-
-        try {
-            String token = com.chess_client.services.TokenStorage.getAccessToken();
-            if (token == null || token.isEmpty())
-                return;
-
-            java.net.URI uri = java.net.URI.create("http://localhost:3000/api/games/" + gameId + "/end");
-            JSONObject body = new JSONObject();
-            if (winner != null) {
-                // Xác định winner_id dựa trên màu thắng
-                body.put("winnerColor", winner == Piece.Color.WHITE ? "white" : "black");
-            } else {
-                body.put("result", "draw");
-            }
-
-            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
-            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
-                    .uri(uri)
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + token)
-                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body.toString()))
-                    .build();
-
-            java.net.http.HttpResponse<String> response = client.send(request,
-                    java.net.http.HttpResponse.BodyHandlers.ofString());
-            System.out.println("Game update response: " + response.statusCode() + " - " + response.body());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void returnToHome() {
