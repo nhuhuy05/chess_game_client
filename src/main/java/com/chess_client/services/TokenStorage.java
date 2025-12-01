@@ -16,4 +16,9 @@ public class TokenStorage {
     public static String getRefreshToken() {
         return refreshToken;
     }
+
+    public static void clear() {
+        accessToken = null;
+        refreshToken = null;
+    }
 }

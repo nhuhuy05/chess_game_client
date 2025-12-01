@@ -1,102 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.effect.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane prefHeight="700" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chess_client.controllers.HomeController">
+<AnchorPane prefHeight="740.0" prefWidth="930.0" style="-fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chess_client.controllers.HomeController">
 
-    <!-- Background Image -->
-    <ImageView fitHeight="700" fitWidth="1200" preserveRatio="false">
-        <image>
-            <Image url="@../images/chess_background.jpg" />
-        </image>
-    </ImageView>
+    <!-- Container chính -->
+    <VBox alignment="TOP_CENTER" spacing="30.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+        <padding>
+            <Insets bottom="40" left="50" right="50" top="40" />
+        </padding>
 
-    <!-- Dark Overlay -->
-    <Region style="-fx-background-color: rgba(0, 0, 0, 0.45);" />
+        <!-- Header với logo và tên game -->
+        <VBox alignment="CENTER" spacing="10.0">
+            <Label style="-fx-font-size: 70px; -fx-text-fill: #f5f5f5;" text="♔" />
+            <Label text="CHESS MASTER">
+                <font>
+                    <Font name="System Bold" size="36.0" />
+                </font>
+                <style>
+                    -fx-text-fill: #f5f5f5;
+                    -fx-font-weight: bold;
+                </style>
+            </Label>
+            <Label fx:id="welcomeLabel" style="-fx-text-fill: #b0b0b0; -fx-font-size: 14px;" text="Chào mừng bạn đến với Chess Master" />
+        </VBox>
 
-    <!-- Main Content -->
-    <BorderPane>
+        <!-- Grid chứa các nút chính -->
+        <GridPane hgap="20.0" maxWidth="700.0" vgap="20.0" alignment="CENTER">
 
-        <!-- Header -->
-        <top>
-            <VBox alignment="CENTER" spacing="8" style="-fx-padding: 100 0 0 0;">
-                <Label style="-fx-text-fill: #ffffff; -fx-font-size: 64px; -fx-font-weight: bold; -fx-font-family: 'Serif'; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.9), 20, 0, 0, 4);" text="♔ CHESS MASTER ♔">
-                    <font>
-                        <Font name="Serif Bold" size="64.0" />
-                    </font>
-                </Label>
+            <!-- Nút Ghép ngẫu nhiên -->
+            <VBox fx:id="btnRandom" onMouseClicked="#handleRandomMatch" alignment="CENTER"  prefHeight="180.0" prefWidth="220.0" spacing="15.0" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 15; -fx-cursor: hand;" styleClass="game-button" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <effect>
+                    <DropShadow color="#00000066" offsetY="5" radius="10" />
+                </effect>
+                <padding>
+                    <Insets bottom="20" left="20" right="20" top="20" />
+                </padding>
+
+                <Label style="-fx-font-size: 50px; -fx-text-fill: #4a9eff;" text="🎲" />
+                <Label style="-fx-text-fill: #f5f5f5; -fx-font-size: 16px; -fx-font-weight: bold;" text="Ghép ngẫu nhiên" />
+                <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 11px;" text="Tìm đối thủ online" wrapText="true" textAlignment="CENTER" />
             </VBox>
-        </top>
 
-        <!-- Center - Menu Buttons -->
-        <center>
-            <HBox alignment="CENTER" spacing="35">
+            <!-- Nút Chơi với máy -->
+            <VBox fx:id="btnComputer" onMouseClicked="#handlePlayComputer" alignment="CENTER"  prefHeight="180.0" prefWidth="220.0" spacing="15.0" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 15; -fx-cursor: hand;" styleClass="game-button" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <effect>
+                    <DropShadow color="#00000066" offsetY="5" radius="10" />
+                </effect>
+                <padding>
+                    <Insets bottom="20" left="20" right="20" top="20" />
+                </padding>
 
-                <!-- Left Column -->
-                <VBox alignment="CENTER" spacing="18">
+                <Label style="-fx-font-size: 50px; -fx-text-fill: #4a9eff;" text="🤖" />
+                <Label style="-fx-text-fill: #f5f5f5; -fx-font-size: 16px; -fx-font-weight: bold;" text="Chơi với máy" />
+                <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 11px;" text="Thử thách AI" wrapText="true" textAlignment="CENTER" />
+            </VBox>
 
-                    <!-- Ghép ngẫu nhiên -->
-                    <VBox alignment="CENTER" spacing="0" style="-fx-cursor: hand;">
-                        <Button fx:id="btnRandom" onAction="#handleRandomMatch" prefHeight="55.0" prefWidth="280.0" style="-fx-background-color: linear-gradient(to bottom, rgba(41, 128, 185, 0.95), rgba(52, 152, 219, 0.95));                                        -fx-text-fill: #ffffff;                                        -fx-font-size: 18px;                                        -fx-font-weight: bold;                                        -fx-background-radius: 15;                                        -fx-cursor: hand;                                        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 18, 0, 0, 6);" text="⚡ QUICK MATCH">
-                        </Button>
-                        <Label style="-fx-text-fill: rgba(255, 255, 255, 0.85); -fx-font-size: 12px; -fx-padding: 5 0 0 0; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 5, 0, 0, 1);" text="Ghép đấu nhanh" />
-                    </VBox>
+            <!-- Nút Chơi với bạn -->
+            <VBox fx:id="btnFriend" onMouseClicked="#handlePlayFriend" alignment="CENTER"  prefHeight="180.0" prefWidth="220.0" spacing="15.0" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 15; -fx-cursor: hand;" styleClass="game-button" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                <effect>
+                    <DropShadow color="#00000066" offsetY="5" radius="10" />
+                </effect>
+                <padding>
+                    <Insets bottom="20" left="20" right="20" top="20" />
+                </padding>
 
-                    <!-- Chơi với máy -->
-                    <VBox alignment="CENTER" spacing="0" style="-fx-cursor: hand;">
-                        <Button fx:id="btnComputer" onAction="#handlePlayComputer" prefHeight="55" prefWidth="280" style="-fx-background-color: linear-gradient(to bottom, rgba(41, 128, 185, 0.95), rgba(52, 152, 219, 0.95));                                        -fx-text-fill: #ffffff;                                        -fx-font-size: 18px;                                        -fx-font-weight: bold;                                        -fx-background-radius: 15;                                        -fx-cursor: hand;                                        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 18, 0, 0, 6);" text="🤖 VS AI">
-                        </Button>
-                        <Label style="-fx-text-fill: rgba(255, 255, 255, 0.85); -fx-font-size: 12px; -fx-padding: 5 0 0 0; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 5, 0, 0, 1);" text="Thách thức máy tính" />
-                    </VBox>
+                <Label style="-fx-font-size: 50px; -fx-text-fill: #4a9eff;" text="👥" />
+                <Label style="-fx-text-fill: #f5f5f5; -fx-font-size: 16px; -fx-font-weight: bold;" text="Chơi với bạn" />
+                <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 11px;" text="Mời bạn bè" wrapText="true" textAlignment="CENTER" />
+            </VBox>
 
-                    <!-- Chơi với bạn bè -->
-                    <VBox alignment="CENTER" spacing="0" style="-fx-cursor: hand;">
-                        <Button fx:id="btnFriend" onAction="#handlePlayFriend" prefHeight="55" prefWidth="280" style="-fx-background-color: linear-gradient(to bottom, rgba(41, 128, 185, 0.95), rgba(52, 152, 219, 0.95));                                        -fx-text-fill: #ffffff;                                        -fx-font-size: 18px;                                        -fx-font-weight: bold;                                        -fx-background-radius: 15;                                        -fx-cursor: hand;                                        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 18, 0, 0, 6);" text="👥 FRIENDS">
-                        </Button>
-                        <Label style="-fx-text-fill: rgba(255, 255, 255, 0.85); -fx-font-size: 12px; -fx-padding: 5 0 0 0; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 5, 0, 0, 1);" text="Đấu với bạn bè" />
-                    </VBox>
+            <!-- Nút Bảng xếp hạng -->
+            <VBox fx:id="btnLeaderboard" onMouseClicked="#handleLeaderboard" alignment="CENTER"  prefHeight="180.0" prefWidth="220.0" spacing="15.0" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 15; -fx-cursor: hand;" styleClass="game-button" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <effect>
+                    <DropShadow color="#00000066" offsetY="5" radius="10" />
+                </effect>
+                <padding>
+                    <Insets bottom="20" left="20" right="20" top="20" />
+                </padding>
 
-                </VBox>
+                <Label style="-fx-font-size: 50px; -fx-text-fill: #ffd700;" text="🏆" />
+                <Label style="-fx-text-fill: #f5f5f5; -fx-font-size: 16px; -fx-font-weight: bold;" text="Bảng xếp hạng" />
+                <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 11px;" text="Top cao thủ" wrapText="true" textAlignment="CENTER" />
+            </VBox>
 
-                <!-- Right Column -->
-                <VBox alignment="CENTER" spacing="18">
+            <!-- Nút Hồ sơ cá nhân -->
+            <VBox fx:id="btnProfile" onMouseClicked="#handleProfile" alignment="CENTER"  prefHeight="180.0" prefWidth="220.0" spacing="15.0" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 15; -fx-cursor: hand;" styleClass="game-button" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <effect>
+                    <DropShadow color="#00000066" offsetY="5" radius="10" />
+                </effect>
+                <padding>
+                    <Insets bottom="20" left="20" right="20" top="20" />
+                </padding>
 
-                    <!-- Bảng xếp hạng -->
-                    <VBox alignment="CENTER" spacing="0" style="-fx-cursor: hand;">
-                        <Button fx:id="btnLeaderboard" onAction="#handleLeaderboard" prefHeight="55" prefWidth="280" style="-fx-background-color: linear-gradient(to bottom, rgba(41, 128, 185, 0.95), rgba(52, 152, 219, 0.95));                                        -fx-text-fill: #ffffff;                                        -fx-font-size: 18px;                                        -fx-font-weight: bold;                                        -fx-background-radius: 15;                                        -fx-cursor: hand;                                        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 18, 0, 0, 6);" text="🏆 RANKINGS">
-                        </Button>
-                        <Label style="-fx-text-fill: rgba(255, 255, 255, 0.85); -fx-font-size: 12px; -fx-padding: 5 0 0 0; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 5, 0, 0, 1);" text="Bảng xếp hạng" />
-                    </VBox>
+                <Label style="-fx-font-size: 50px; -fx-text-fill: #4a9eff;" text="👤" />
+                <Label style="-fx-text-fill: #f5f5f5; -fx-font-size: 16px; -fx-font-weight: bold;" text="Hồ sơ cá nhân" />
+                <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 11px;" text="Thông tin thống kê" wrapText="true" textAlignment="CENTER" />
+            </VBox>
 
-                    <!-- Hồ sơ cá nhân -->
-                    <VBox alignment="CENTER" spacing="0" style="-fx-cursor: hand;">
-                        <Button fx:id="btnProfile" onAction="#handleProfile" prefHeight="55" prefWidth="280" style="-fx-background-color: linear-gradient(to bottom, rgba(41, 128, 185, 0.95), rgba(52, 152, 219, 0.95));                                        -fx-text-fill: #ffffff;                                        -fx-font-size: 18px;                                        -fx-font-weight: bold;                                        -fx-background-radius: 15;                                        -fx-cursor: hand;                                        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 18, 0, 0, 6);" text="👤 PROFILE">
-                        </Button>
-                        <Label style="-fx-text-fill: rgba(255, 255, 255, 0.85); -fx-font-size: 12px; -fx-padding: 5 0 0 0; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 5, 0, 0, 1);" text="Hồ sơ của tôi" />
-                    </VBox>
+            <!-- Nút Đăng xuất -->
+            <VBox fx:id="btnExit" onMouseClicked="#handleExit" alignment="CENTER"  prefHeight="180.0" prefWidth="220.0" spacing="15.0" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 15; -fx-cursor: hand;" styleClass="game-button" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <effect>
+                    <DropShadow color="#00000066" offsetY="5" radius="10" />
+                </effect>
+                <padding>
+                    <Insets bottom="20" left="20" right="20" top="20" />
+                </padding>
 
-                    <!-- Thoát -->
-                    <VBox alignment="CENTER" spacing="0" style="-fx-cursor: hand;">
-                        <Button fx:id="btnExit" onAction="#handleExit" prefHeight="55" prefWidth="280" style="-fx-background-color: linear-gradient(to bottom, rgba(41, 128, 185, 0.95), rgba(52, 152, 219, 0.95));                                        -fx-text-fill: #ffffff;                                        -fx-font-size: 18px;                                        -fx-font-weight: bold;                                        -fx-background-radius: 15;                                        -fx-cursor: hand;                                        -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 18, 0, 0, 6);" text="🚪 EXIT">
-                        </Button>
-                        <Label style="-fx-text-fill: rgba(255, 255, 255, 0.85); -fx-font-size: 12px; -fx-padding: 5 0 0 0; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 5, 0, 0, 1);" text="Thoát game" />
-                    </VBox>
+                <Label style="-fx-font-size: 50px; -fx-text-fill: #ff6b6b;" text="🚪" />
+                <Label style="-fx-text-fill: #f5f5f5; -fx-font-size: 16px; -fx-font-weight: bold;" text="Đăng xuất" />
+                <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 11px;" text="Thoát tài khoản" wrapText="true" textAlignment="CENTER" />
+            </VBox>
 
-                </VBox>
+        </GridPane>
 
-            </HBox>
-        </center>
+        <!-- Footer với thông tin phiên bản -->
+        <Label style="-fx-text-fill: #606060; -fx-font-size: 11px;" text="Chess Master v1.0 | © 2024" />
 
-        <!-- Footer -->
-        <bottom>
-            <HBox alignment="CENTER" style="-fx-padding: 0 0 25 0;">
-                <Label style="-fx-text-fill: rgba(255, 255, 255, 0.6); -fx-font-size: 11px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.8), 5, 0, 0, 1);" text="© 2025 Chess Master • Powered by Strategy &amp; Intelligence" />
-            </HBox>
-        </bottom>
+    </VBox>
 
-    </BorderPane>
-
-</StackPane>
+</AnchorPane>

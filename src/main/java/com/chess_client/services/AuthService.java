@@ -22,8 +22,7 @@ public class AuthService {
                     .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
                     .build();
 
-            HttpResponse<String> response =
-                    client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             System.out.println("Status: " + response.statusCode());
 
@@ -45,6 +44,35 @@ public class AuthService {
         }
     }
 
+    public static void signOutSync() {
+        try {
+            String refresh = TokenStorage.getRefreshToken();
+            if (refresh == null || refresh.isEmpty()) {
+                return;
+            }
+
+            JSONObject body = new JSONObject();
+            body.put("refreshToken", refresh);
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/signout"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
+                    .build();
+
+            client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            TokenStorage.clear();
+        }
+    }
+
+    public static void signOutAsync() {
+        new Thread(AuthService::signOutSync).start();
+    }
+
     public static JSONObject signUp(String username, String password, String email, String displayName) {
         try {
             JSONObject body = new JSONObject();
@@ -60,8 +88,7 @@ public class AuthService {
                     .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
                     .build();
 
-            HttpResponse<String> response =
-                    client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             System.out.println("Status: " + response.statusCode());
             System.out.println("Response: " + response.body());
@@ -91,7 +118,5 @@ public class AuthService {
             return error;
         }
     }
-
-
 
 }

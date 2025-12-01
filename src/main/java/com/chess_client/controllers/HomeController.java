@@ -4,6 +4,7 @@ import com.chess_client.models.Piece;
 import com.chess_client.network.PeerClient;
 import com.chess_client.network.PeerServer;
 import com.chess_client.network.PeerService;
+import com.chess_client.services.AuthService;
 import com.chess_client.services.TokenStorage;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -13,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.json.JSONObject;
 
@@ -21,22 +23,22 @@ import java.net.Socket;
 public class HomeController {
 
     @FXML
-    private Button btnRandom;
+    private VBox btnRandom;
 
     @FXML
-    private Button btnComputer;
+    private VBox btnComputer;
 
     @FXML
-    private Button btnFriend;
+    private VBox btnFriend;
 
     @FXML
-    private Button btnLeaderboard;
+    private VBox btnLeaderboard;
 
     @FXML
-    private Button btnProfile;
+    private VBox btnProfile;
 
     @FXML
-    private Button btnExit;
+    private VBox btnExit;
 
     @FXML
     private Label lblWelcome;
@@ -229,6 +231,9 @@ public class HomeController {
 
     @FXML
     private void handleExit() {
+        // Gọi logout đồng bộ để đảm bảo server nhận được request trước khi thoát app
+        AuthService.signOutSync();
+        Platform.exit();
         System.exit(0);
     }
 }
