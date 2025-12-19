@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="740.0" prefWidth="930.0"
+            style="-fx-background-color: linear-gradient(to bottom, #0f0f1e, #1a1a2e);"
+            xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.chess_client.controllers.ProfileController">
+
+    <VBox spacing="20.0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"
+          AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+        <padding>
+            <Insets bottom="20" left="30" right="30" top="20" />
+        </padding>
+
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="20.0"
+              style="-fx-background-color: rgba(30, 30, 50, 0.6); -fx-background-radius: 10; -fx-padding: 15;">
+            <Button fx:id="backButton" onAction="#handleBack"
+                    style="-fx-background-color: rgba(74, 158, 255, 0.15); -fx-text-fill: #4a9eff; -fx-background-radius: 8; -fx-padding: 10 20; -fx-border-color: #4a9eff; -fx-border-width: 1; -fx-border-radius: 8; -fx-cursor: hand;"
+                    text="← Quay lại" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label style="-fx-text-fill: #ffffff; -fx-font-size: 28px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(74, 158, 255, 0.3), 10, 0, 0, 0);"
+                   text="👤 Hồ sơ cá nhân" />
+            <Region HBox.hgrow="ALWAYS" />
+        </HBox>
+
+        <!-- Main Content -->
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;">
+            <VBox spacing="20.0"
+                  style="-fx-background-color: rgba(30, 30, 50, 0.4); -fx-background-radius: 10; -fx-padding: 30;">
+                <padding>
+                    <Insets bottom="20" left="20" right="20" top="20" />
+                </padding>
+
+                <!-- Thông tin cá nhân -->
+                <VBox spacing="20.0">
+                    <Label style="-fx-text-fill: #ffffff; -fx-font-size: 20px; -fx-font-weight: bold;"
+                           text="Thông tin cá nhân" />
+
+                    <!-- Avatar và tên hiển thị -->
+                    <HBox spacing="20.0" alignment="CENTER_LEFT">
+                        <Label fx:id="avatarLabel" style="-fx-font-size: 64px;" text="👤" />
+                        <VBox spacing="5.0">
+                            <Label fx:id="displayNameLabel"
+                                   style="-fx-text-fill: #ffffff; -fx-font-size: 24px; -fx-font-weight: bold;" />
+                            <Label fx:id="usernameLabel"
+                                   style="-fx-text-fill: #b0b0b0; -fx-font-size: 14px;" />
+                        </VBox>
+                    </HBox>
+
+                    <!-- Form chỉnh sửa -->
+                    <VBox spacing="15.0" style="-fx-background-color: rgba(20, 20, 35, 0.5); -fx-background-radius: 8; -fx-padding: 20;">
+                        <Label style="-fx-text-fill: #ffffff; -fx-font-size: 16px; -fx-font-weight: bold;"
+                               text="Chỉnh sửa thông tin" />
+
+                        <GridPane hgap="15.0" vgap="15.0">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="150.0" prefWidth="150.0" />
+                                <ColumnConstraints hgrow="ALWAYS" />
+                            </columnConstraints>
+
+                            <!-- Tên hiển thị -->
+                            <Label style="-fx-text-fill: #e0e0e0; -fx-font-size: 14px;" text="Tên hiển thị:"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <TextField fx:id="displayNameField"
+                                       style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: white; -fx-prompt-text-fill: rgba(255,255,255,0.5); -fx-background-radius: 5; -fx-padding: 10; -fx-border-color: rgba(74, 158, 255, 0.3); -fx-border-width: 1; -fx-border-radius: 5;"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                            <!-- Email -->
+                            <Label style="-fx-text-fill: #e0e0e0; -fx-font-size: 14px;" text="Email:"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <TextField fx:id="emailField"
+                                       style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: white; -fx-prompt-text-fill: rgba(255,255,255,0.5); -fx-background-radius: 5; -fx-padding: 10; -fx-border-color: rgba(74, 158, 255, 0.3); -fx-border-width: 1; -fx-border-radius: 5;"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                            <!-- Số điện thoại -->
+                            <Label style="-fx-text-fill: #e0e0e0; -fx-font-size: 14px;" text="Số điện thoại:"
+                                   GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <TextField fx:id="phoneField"
+                                       style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: white; -fx-prompt-text-fill: rgba(255,255,255,0.5); -fx-background-radius: 5; -fx-padding: 10; -fx-border-color: rgba(74, 158, 255, 0.3); -fx-border-width: 1; -fx-border-radius: 5;"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        </GridPane>
+
+                        <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                            <Button fx:id="saveButton" onAction="#handleSaveProfile"
+                                    style="-fx-background-color: linear-gradient(to bottom, #4a9eff, #3a7fd5); -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10 30; -fx-font-weight: bold; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(74, 158, 255, 0.4), 8, 0, 0, 2);"
+                                    text="💾 Lưu thay đổi" />
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <!-- Thống kê -->
+                <VBox spacing="15.0">
+                    <Label style="-fx-text-fill: #ffffff; -fx-font-size: 20px; -fx-font-weight: bold;"
+                           text="Thống kê trận đấu" />
+
+                    <GridPane hgap="20.0" vgap="15.0"
+                              style="-fx-background-color: rgba(20, 20, 35, 0.5); -fx-background-radius: 8; -fx-padding: 20;">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS" />
+                            <ColumnConstraints hgrow="ALWAYS" />
+                            <ColumnConstraints hgrow="ALWAYS" />
+                            <ColumnConstraints hgrow="ALWAYS" />
+                        </columnConstraints>
+
+                        <!-- Tổng số trận -->
+                        <VBox spacing="5.0" alignment="CENTER"
+                              style="-fx-background-color: rgba(74, 158, 255, 0.15); -fx-background-radius: 8; -fx-padding: 15;"
+                              GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 12px;" text="Tổng số trận" />
+                            <Label fx:id="totalGamesLabel"
+                                   style="-fx-text-fill: #4a9eff; -fx-font-size: 32px; -fx-font-weight: bold;"
+                                   text="0" />
+                        </VBox>
+
+                        <!-- Số trận thắng -->
+                        <VBox spacing="5.0" alignment="CENTER"
+                              style="-fx-background-color: rgba(76, 175, 80, 0.15); -fx-background-radius: 8; -fx-padding: 15;"
+                              GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 12px;" text="Thắng" />
+                            <Label fx:id="winsLabel"
+                                   style="-fx-text-fill: #4CAF50; -fx-font-size: 32px; -fx-font-weight: bold;"
+                                   text="0" />
+                        </VBox>
+
+                        <!-- Số trận thua -->
+                        <VBox spacing="5.0" alignment="CENTER"
+                              style="-fx-background-color: rgba(244, 67, 54, 0.15); -fx-background-radius: 8; -fx-padding: 15;"
+                              GridPane.columnIndex="2" GridPane.rowIndex="0">
+                            <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 12px;" text="Thua" />
+                            <Label fx:id="lossesLabel"
+                                   style="-fx-text-fill: #f44336; -fx-font-size: 32px; -fx-font-weight: bold;"
+                                   text="0" />
+                        </VBox>
+
+                        <!-- Số trận hòa -->
+                        <VBox spacing="5.0" alignment="CENTER"
+                              style="-fx-background-color: rgba(255, 152, 0, 0.15); -fx-background-radius: 8; -fx-padding: 15;"
+                              GridPane.columnIndex="3" GridPane.rowIndex="0">
+                            <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 12px;" text="Hòa" />
+                            <Label fx:id="drawsLabel"
+                                   style="-fx-text-fill: #ff9800; -fx-font-size: 32px; -fx-font-weight: bold;"
+                                   text="0" />
+                        </VBox>
+
+                        <!-- Điểm số -->
+                        <VBox spacing="5.0" alignment="CENTER"
+                              style="-fx-background-color: rgba(255, 193, 7, 0.15); -fx-background-radius: 8; -fx-padding: 15; -fx-border-color: rgba(255, 193, 7, 0.3); -fx-border-width: 2; -fx-border-radius: 8;"
+                              GridPane.columnIndex="0" GridPane.columnSpan="4" GridPane.rowIndex="1">
+                            <Label style="-fx-text-fill: #b0b0b0; -fx-font-size: 14px;" text="Điểm số" />
+                            <Label fx:id="scoreLabel"
+                                   style="-fx-text-fill: #ffc107; -fx-font-size: 48px; -fx-font-weight: bold;"
+                                   text="0" />
+                        </VBox>
+                    </GridPane>
+                </VBox>
+
+                <!-- Đổi mật khẩu -->
+                <VBox spacing="15.0" style="-fx-background-color: rgba(20, 20, 35, 0.5); -fx-background-radius: 8; -fx-padding: 20;">
+                    <Label style="-fx-text-fill: #ffffff; -fx-font-size: 16px; -fx-font-weight: bold;"
+                           text="Đổi mật khẩu" />
+
+                    <GridPane hgap="15.0" vgap="15.0">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="150.0" prefWidth="150.0" />
+                            <ColumnConstraints hgrow="ALWAYS" />
+                        </columnConstraints>
+
+                        <!-- Mật khẩu cũ -->
+                        <Label style="-fx-text-fill: #e0e0e0; -fx-font-size: 14px;" text="Mật khẩu cũ:"
+                               GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <PasswordField fx:id="oldPasswordField"
+                                       style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: white; -fx-prompt-text-fill: rgba(255,255,255,0.5); -fx-background-radius: 5; -fx-padding: 10; -fx-border-color: rgba(74, 158, 255, 0.3); -fx-border-width: 1; -fx-border-radius: 5;"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                        <!-- Mật khẩu mới -->
+                        <Label style="-fx-text-fill: #e0e0e0; -fx-font-size: 14px;" text="Mật khẩu mới:"
+                               GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <PasswordField fx:id="newPasswordField"
+                                       style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: white; -fx-prompt-text-fill: rgba(255,255,255,0.5); -fx-background-radius: 5; -fx-padding: 10; -fx-border-color: rgba(74, 158, 255, 0.3); -fx-border-width: 1; -fx-border-radius: 5;"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                        <!-- Xác nhận mật khẩu mới -->
+                        <Label style="-fx-text-fill: #e0e0e0; -fx-font-size: 14px;" text="Xác nhận mật khẩu:"
+                               GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <PasswordField fx:id="confirmPasswordField"
+                                       style="-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: white; -fx-prompt-text-fill: rgba(255,255,255,0.5); -fx-background-radius: 5; -fx-padding: 10; -fx-border-color: rgba(74, 158, 255, 0.3); -fx-border-width: 1; -fx-border-radius: 5;"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                    </GridPane>
+
+                    <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                        <Button fx:id="changePasswordButton" onAction="#handleChangePassword"
+                                style="-fx-background-color: linear-gradient(to bottom, #ff9800, #f57c00); -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10 30; -fx-font-weight: bold; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(255, 152, 0, 0.4), 8, 0, 0, 2);"
+                                text="🔐 Đổi mật khẩu" />
+                    </HBox>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+
+    </VBox>
+
+</AnchorPane>

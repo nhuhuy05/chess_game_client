@@ -202,7 +202,16 @@ public class HomeController {
 
     @FXML
     private void handleProfile() {
-        System.out.println("Hồ sơ cá nhân đã được chọn");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/profile.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnProfile.getScene().getWindow();
+            stage.setScene(scene);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showAlert("Lỗi", "Không thể mở màn hình hồ sơ: " + ex.getMessage());
+        }
     }
 
     @FXML
