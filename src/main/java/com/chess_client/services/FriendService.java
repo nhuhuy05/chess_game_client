@@ -100,9 +100,21 @@ public class FriendService {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if (response.statusCode() != 201) {
-            JSONObject errorJson = new JSONObject(response.body());
-            throw new IOException(errorJson.optString("message", "Lỗi khi gửi lời mời kết bạn"));
+        // Chấp nhận cả 200 và 201 (200 là khi auto-accept từ phía server)
+        int statusCode = response.statusCode();
+        if (statusCode != 201 && statusCode != 200) {
+            String errorMessage = "Lỗi khi gửi lời mời kết bạn";
+            try {
+                String responseBody = response.body();
+                if (responseBody != null && !responseBody.trim().isEmpty()) {
+                    JSONObject errorJson = new JSONObject(responseBody);
+                    errorMessage = errorJson.optString("message", errorMessage);
+                }
+            } catch (Exception e) {
+                // Nếu không parse được JSON, dùng message mặc định
+                errorMessage = "Lỗi khi gửi lời mời kết bạn (Status: " + statusCode + ")";
+            }
+            throw new IOException(errorMessage);
         }
     }
 

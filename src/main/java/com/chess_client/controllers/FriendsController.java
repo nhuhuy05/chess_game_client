@@ -61,6 +61,8 @@ public class FriendsController {
 
         // Tự động refresh lời mời chơi cờ mỗi 3 giây
         startGameInvitationChecker();
+        // Tự động refresh lời mời kết bạn mỗi 3 giây
+        startFriendRequestChecker();
     }
 
     private void startGameInvitationChecker() {
@@ -70,6 +72,23 @@ public class FriendsController {
                     Thread.sleep(3000); // Kiểm tra mỗi 3 giây
                     Platform.runLater(() -> {
                         refreshGameInvitations();
+                    });
+                } catch (Exception e) {
+                    // Bỏ qua lỗi
+                }
+            }
+        });
+        checkerThread.setDaemon(true);
+        checkerThread.start();
+    }
+
+    private void startFriendRequestChecker() {
+        Thread checkerThread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    Thread.sleep(3000); // Kiểm tra mỗi 3 giây
+                    Platform.runLater(() -> {
+                        refreshFriendRequests();
                     });
                 } catch (Exception e) {
                     // Bỏ qua lỗi
