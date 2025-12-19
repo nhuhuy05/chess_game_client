@@ -183,7 +183,16 @@ public class HomeController {
 
     @FXML
     private void handlePlayFriend() {
-        System.out.println("Chơi với bạn bè đã được chọn");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/friends.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnFriend.getScene().getWindow();
+            stage.setScene(scene);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showAlert("Lỗi", "Không thể mở màn hình bạn bè: " + ex.getMessage());
+        }
     }
 
     @FXML
