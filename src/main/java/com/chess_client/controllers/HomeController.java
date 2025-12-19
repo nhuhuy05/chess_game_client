@@ -197,7 +197,16 @@ public class HomeController {
 
     @FXML
     private void handleLeaderboard() {
-        System.out.println("Bảng xếp hạng đã được chọn");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/leaderboard.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnLeaderboard.getScene().getWindow();
+            stage.setScene(scene);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showAlert("Lỗi", "Không thể mở màn hình bảng xếp hạng: " + ex.getMessage());
+        }
     }
 
     @FXML
