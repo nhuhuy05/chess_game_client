@@ -24,7 +24,8 @@ public class UserTabHandler {
     private int currentPage = 1;
     private int limit = 20;
 
-    public UserTabHandler(ObservableList<UserRow> userList, BiConsumer<Alert.AlertType, String> showAlert, Runnable refreshStats) {
+    public UserTabHandler(ObservableList<UserRow> userList, BiConsumer<Alert.AlertType, String> showAlert,
+            Runnable refreshStats) {
         this.userList = userList;
         this.showAlert = showAlert;
         this.refreshStats = refreshStats;
@@ -59,7 +60,8 @@ public class UserTabHandler {
                             }
                         }
                     } else {
-                        showAlert.accept(Alert.AlertType.ERROR, result.optString("message", "Không thể tải danh sách người dùng"));
+                        showAlert.accept(Alert.AlertType.ERROR,
+                                result.optString("message", "Không thể tải danh sách người dùng"));
                     }
                 });
             } catch (Exception e) {
@@ -124,7 +126,8 @@ public class UserTabHandler {
                             refreshStats.run();
                         }
                     } else {
-                        showAlert.accept(Alert.AlertType.ERROR, updateResult.optString("message", "Không thể cập nhật"));
+                        showAlert.accept(Alert.AlertType.ERROR,
+                                updateResult.optString("message", "Không thể cập nhật"));
                     }
                 });
             }).start();
@@ -150,7 +153,8 @@ public class UserTabHandler {
                             refreshStats.run();
                         }
                     } else {
-                        showAlert.accept(Alert.AlertType.ERROR, deleteResult.optString("message", "Không thể xóa người dùng"));
+                        showAlert.accept(Alert.AlertType.ERROR,
+                                deleteResult.optString("message", "Không thể xóa người dùng"));
                     }
                 });
             }).start();
