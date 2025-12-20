@@ -111,7 +111,9 @@ public class HomeController {
             controller.setPeerSocket(socket);
 
             Stage stage = (Stage) btnRandom.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root, 1000, 700);
+            stage.setScene(scene);
+            stage.setResizable(false);
         } catch (Exception ex) {
             ex.printStackTrace();
             showAlert("Lỗi", "Không thể mở màn hình game: " + ex.getMessage());
@@ -173,7 +175,9 @@ public class HomeController {
                 controller.setupVsComputer(difficulty, Piece.Color.WHITE);
 
                 Stage stage = (Stage) btnComputer.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                Scene scene = new Scene(root, 1000, 700);
+                stage.setScene(scene);
+                stage.setResizable(false);
             } catch (Exception e) {
                 e.printStackTrace();
                 showAlert("Lỗi", "Không thể mở màn hình chơi với máy: " + e.getMessage());
@@ -186,9 +190,10 @@ public class HomeController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/friends.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, 930, 740);
             Stage stage = (Stage) btnFriend.getScene().getWindow();
             stage.setScene(scene);
+            stage.setResizable(false);
         } catch (Exception ex) {
             ex.printStackTrace();
             showAlert("Lỗi", "Không thể mở màn hình bạn bè: " + ex.getMessage());
@@ -200,9 +205,10 @@ public class HomeController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/leaderboard.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, 930, 740);
             Stage stage = (Stage) btnLeaderboard.getScene().getWindow();
             stage.setScene(scene);
+            stage.setResizable(false);
         } catch (Exception ex) {
             ex.printStackTrace();
             showAlert("Lỗi", "Không thể mở màn hình bảng xếp hạng: " + ex.getMessage());
@@ -214,9 +220,10 @@ public class HomeController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/profile.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, 930, 740);
             Stage stage = (Stage) btnProfile.getScene().getWindow();
             stage.setScene(scene);
+            stage.setResizable(false);
         } catch (Exception ex) {
             ex.printStackTrace();
             showAlert("Lỗi", "Không thể mở màn hình hồ sơ: " + ex.getMessage());

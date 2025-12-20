@@ -549,9 +549,10 @@ public class GameController {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/com/chess_client/fxml/home.fxml"));
             javafx.scene.Parent root = loader.load();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root);
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 930, 740);
             javafx.stage.Stage stage = (javafx.stage.Stage) chessBoard.getScene().getWindow();
             stage.setScene(scene);
+            stage.setResizable(false);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * Handler cho phần thống kê
  */
 public class StatsHandler {
-    
+
     private final Label lblStats;
 
     public StatsHandler(Label lblStats) {
@@ -17,11 +17,18 @@ public class StatsHandler {
     }
 
     public void loadSystemStats() {
+        if (lblStats == null) {
+            return; // Label not yet injected
+        }
+
         new Thread(() -> {
             try {
                 JSONObject result = AdminService.getSystemStats();
 
                 Platform.runLater(() -> {
+                    if (lblStats == null)
+                        return; // Double check
+
                     if (result.has("statusCode") && result.getInt("statusCode") == 200) {
                         JSONObject users = result.getJSONObject("users");
 
@@ -38,10 +45,12 @@ public class StatsHandler {
                     }
                 });
             } catch (Exception e) {
-                e.printStackTrace();
-                Platform.runLater(() -> lblStats.setText("Lỗi khi tải thống kê"));
+                Platform.runLater(() -> {
+                    if (lblStats != null) {
+                        lblStats.setText("Lỗi khi tải thống kê");
+                    }
+                });
             }
         }).start();
     }
 }
-

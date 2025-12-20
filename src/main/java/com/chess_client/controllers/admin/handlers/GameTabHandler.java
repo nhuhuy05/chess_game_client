@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  * Handler cho tab quản lý trận đấu
  */
 public class GameTabHandler {
-    
+
     private final ObservableList<GameRow> gameList;
     private final Consumer<String> showAlert;
 
@@ -35,10 +35,11 @@ public class GameTabHandler {
                 Platform.runLater(() -> gameList.clear());
                 int page = 1;
                 boolean hasMore = true;
+                int maxPages = 10; // Limit to prevent memory issues
 
-                // Load all games by paginating through all pages
-                while (hasMore) {
-                    JSONObject result = AdminService.getAllGames(page, 1000, finalStatus);
+                // Load games by paginating through pages (with limit)
+                while (hasMore && page <= maxPages) {
+                    JSONObject result = AdminService.getAllGames(page, 100, finalStatus); // Reduced page size
 
                     if (result.has("statusCode") && result.getInt("statusCode") == 200) {
                         JSONArray games = result.getJSONArray("games");
@@ -84,10 +85,8 @@ public class GameTabHandler {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 Platform.runLater(() -> showAlert.accept("Lỗi kết nối: " + e.getMessage()));
             }
         }).start();
     }
 }
-

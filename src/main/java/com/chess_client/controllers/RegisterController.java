@@ -83,9 +83,11 @@ public class RegisterController {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/com/chess_client/fxml/login.fxml")
             );
-            javafx.scene.Scene scene = new javafx.scene.Scene(loader.load());
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 500, 600);
             javafx.stage.Stage stage = (javafx.stage.Stage) usernameField.getScene().getWindow();
             stage.setScene(scene);
+            stage.setResizable(false);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Không thể quay lại đăng nhập!");

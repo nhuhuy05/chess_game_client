@@ -17,7 +17,7 @@ import java.util.function.Consumer;
  * Handler cho tab quản lý người dùng
  */
 public class UserTabHandler {
-    
+
     private final ObservableList<UserRow> userList;
     private final Consumer<String> showAlert;
     private final Runnable refreshStats;
@@ -31,6 +31,11 @@ public class UserTabHandler {
     }
 
     public void loadUsers(String search) {
+        // Reset to first page when searching
+        if (search != null && !search.trim().isEmpty()) {
+            currentPage = 1;
+        }
+
         new Thread(() -> {
             try {
                 JSONObject result = AdminService.getAllUsers(currentPage, limit, search);
@@ -43,14 +48,14 @@ public class UserTabHandler {
                         for (int i = 0; i < users.length(); i++) {
                             JSONObject user = users.getJSONObject(i);
                             // Chỉ hiển thị user thường, không hiển thị admin
-                            if ("user".equals(user.getString("role"))) {
+                            if ("user".equals(user.optString("role", ""))) {
                                 userList.add(new UserRow(
                                         user.getInt("id"),
                                         user.getString("username"),
                                         user.optString("display_name", ""),
                                         user.optString("email", ""),
                                         user.optString("phone", ""),
-                                        user.getString("status")));
+                                        user.optString("status", "active")));
                             }
                         }
                     } else {
@@ -58,7 +63,6 @@ public class UserTabHandler {
                     }
                 });
             } catch (Exception e) {
-                e.printStackTrace();
                 Platform.runLater(() -> showAlert.accept("Lỗi kết nối: " + e.getMessage()));
             }
         }).start();
@@ -93,20 +97,32 @@ public class UserTabHandler {
         Optional<ButtonType> result = dialog.showAndWait();
 
         if (result.isPresent() && result.get() == btnSave) {
+            String displayName = txtDisplayName.getText().trim();
+            String email = txtEmail.getText().trim();
+            String phone = txtPhone.getText().trim();
+
+            // Basic validation
+            if (email.isEmpty() && phone.isEmpty()) {
+                showAlert.accept("Vui lòng nhập ít nhất email hoặc số điện thoại");
+                return;
+            }
+
             new Thread(() -> {
                 JSONObject updateResult = AdminService.updateUser(
                         user.getId(),
-                        txtDisplayName.getText(),
-                        txtEmail.getText(),
-                        txtPhone.getText(),
+                        displayName,
+                        email,
+                        phone,
                         null,
                         null);
 
                 Platform.runLater(() -> {
                     if (updateResult.has("statusCode") && updateResult.getInt("statusCode") == 200) {
-                        showAlert.accept("Đã cập nhật người dùng");
+                        showAlert.accept("Đã cập nhật người dùng thành công");
                         loadUsers("");
-                        refreshStats.run();
+                        if (refreshStats != null) {
+                            refreshStats.run();
+                        }
                     } else {
                         showAlert.accept(updateResult.optString("message", "Không thể cập nhật"));
                     }
@@ -128,9 +144,11 @@ public class UserTabHandler {
 
                 Platform.runLater(() -> {
                     if (deleteResult.has("statusCode") && deleteResult.getInt("statusCode") == 200) {
-                        showAlert.accept("Đã xóa người dùng");
+                        showAlert.accept("Đã xóa người dùng thành công");
                         loadUsers("");
-                        refreshStats.run();
+                        if (refreshStats != null) {
+                            refreshStats.run();
+                        }
                     } else {
                         showAlert.accept(deleteResult.optString("message", "Không thể xóa người dùng"));
                     }
@@ -143,4 +161,3 @@ public class UserTabHandler {
         this.currentPage = page;
     }
 }
-

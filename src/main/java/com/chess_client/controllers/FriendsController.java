@@ -168,9 +168,10 @@ public class FriendsController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/home.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, 930, 740);
             javafx.stage.Stage stage = (javafx.stage.Stage) backButton.getScene().getWindow();
             stage.setScene(scene);
+            stage.setResizable(false);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Lỗi", "Không thể quay lại màn hình chính: " + e.getMessage());
@@ -596,7 +597,9 @@ public class FriendsController {
             controller.setPeerSocket(socket);
 
             javafx.stage.Stage stage = (javafx.stage.Stage) backButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root, 1000, 700);
+            stage.setScene(scene);
+            stage.setResizable(false);
         } catch (Exception ex) {
             ex.printStackTrace();
             showAlert("Lỗi", "Không thể mở màn hình game: " + ex.getMessage());

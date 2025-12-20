@@ -125,9 +125,10 @@ public class ProfileController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/home.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, 930, 740);
             javafx.stage.Stage stage = (javafx.stage.Stage) backButton.getScene().getWindow();
             stage.setScene(scene);
+            stage.setResizable(false);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Lỗi", "Không thể quay lại màn hình chính: " + e.getMessage());
@@ -215,5 +216,3 @@ public class ProfileController {
         alert.showAndWait();
     }
 }
-
-

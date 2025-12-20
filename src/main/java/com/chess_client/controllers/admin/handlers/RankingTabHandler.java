@@ -13,11 +13,9 @@ import java.util.function.Consumer;
  * Handler cho tab quản lý xếp hạng
  */
 public class RankingTabHandler {
-    
+
     private final ObservableList<RankingRow> rankingList;
     private final Consumer<String> showAlert;
-    private int currentPage = 1;
-    private int limit = 20;
 
     public RankingTabHandler(ObservableList<RankingRow> rankingList, Consumer<String> showAlert) {
         this.rankingList = rankingList;
@@ -27,7 +25,7 @@ public class RankingTabHandler {
     public void loadRankings() {
         new Thread(() -> {
             try {
-                JSONObject result = AdminService.getAllRankings(currentPage, limit);
+                JSONObject result = AdminService.getAllRankings(1, 20);
 
                 Platform.runLater(() -> {
                     if (result.has("statusCode") && result.getInt("statusCode") == 200) {
@@ -52,10 +50,8 @@ public class RankingTabHandler {
                     }
                 });
             } catch (Exception e) {
-                e.printStackTrace();
                 Platform.runLater(() -> showAlert.accept("Lỗi kết nối: " + e.getMessage()));
             }
         }).start();
     }
 }
-

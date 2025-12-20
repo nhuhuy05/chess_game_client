@@ -18,7 +18,7 @@ public class LoginController {
     public void setStage(Stage stage) {
         this.stage = stage;
     }
-    
+
     @FXML
     private TextField usernameField;
     @FXML
@@ -56,13 +56,13 @@ public class LoginController {
         if (result.has("accessToken")) {
             TokenStorage.save(result.getString("accessToken"), result.getString("refreshToken"));
             showInfo("Đăng nhập thành công! Đang chuyển hướng...");
-            
+
             // Check user role and route accordingly
             new Thread(() -> {
                 try {
                     JSONObject profile = ProfileService.getProfile();
                     String role = profile.optString("role", "user");
-                    
+
                     Platform.runLater(() -> {
                         if ("admin".equals(role)) {
                             routeToAdmin();
@@ -102,46 +102,49 @@ public class LoginController {
         }
     }
 
-
     @FXML
     public void onRegisterLinkClicked(ActionEvent event) {
         try {
             // Chuyển sang màn hình đăng ký (Sign Up)
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/com/chess_client/fxml/register.fxml"));
-            javafx.scene.Scene scene = new javafx.scene.Scene(loader.load());
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 500, 600);
             javafx.stage.Stage stage = (javafx.stage.Stage) usernameField.getScene().getWindow();
             stage.setScene(scene);
+            stage.setResizable(false);
         } catch (Exception e) {
             e.printStackTrace();
             showError("Không thể mở giao diện đăng ký!");
         }
     }
 
-    private void routeToHome(){
+    private void routeToHome() {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/com/chess_client/fxml/home.fxml"));
-            javafx.scene.Scene scene = new javafx.scene.Scene(loader.load());
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 930, 740);
             javafx.stage.Stage stage = (javafx.stage.Stage) usernameField.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("Chess - Trang chủ");
+            stage.setResizable(false);
         } catch (Exception e) {
             e.printStackTrace();
             showError("Không thể mở giao diện trang chủ!");
         }
     }
 
-    private void routeToAdmin(){
+    private void routeToAdmin() {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/com/chess_client/fxml/admin.fxml"));
             javafx.scene.Parent root = loader.load();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 700);
             javafx.stage.Stage stage = (javafx.stage.Stage) usernameField.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("Chess - Quản trị hệ thống");
-            stage.setResizable(true);
+            stage.setResizable(false);
         } catch (Exception e) {
             e.printStackTrace();
             showError("Không thể mở giao diện quản trị!");
