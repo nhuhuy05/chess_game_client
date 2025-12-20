@@ -1,4 +1,4 @@
-package com.chess_client.controllers;
+package com.chess_client.network;
 
 import com.chess_client.models.Move;
 import javafx.application.Platform;
@@ -19,7 +19,7 @@ public class PeerNetworkHandler {
     private Socket peerSocket;
     private BufferedReader peerIn;
     private PrintWriter peerOut;
-    
+
     // Callbacks
     private OnMoveReceived onMoveReceived;
     private OnChatReceived onChatReceived;
@@ -52,7 +52,7 @@ public class PeerNetworkHandler {
         try {
             this.peerIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.peerOut = new PrintWriter(socket.getOutputStream(), true);
-            
+
             // Bắt đầu thread lắng nghe
             Thread listener = new Thread(this::listenForPeerMessages);
             listener.setDaemon(true);
@@ -78,8 +78,9 @@ public class PeerNetworkHandler {
      * Gửi nước đi đến đối thủ qua P2P.
      */
     public void sendMove(Move move) {
-        if (peerOut == null) return;
-        
+        if (peerOut == null)
+            return;
+
         try {
             JSONObject json = new JSONObject();
             json.put("type", "move");
@@ -98,8 +99,9 @@ public class PeerNetworkHandler {
      * Gửi tin nhắn chat đến đối thủ.
      */
     public void sendChatMessage(String message) {
-        if (peerOut == null) return;
-        
+        if (peerOut == null)
+            return;
+
         try {
             JSONObject json = new JSONObject();
             json.put("type", "chat");
@@ -115,8 +117,9 @@ public class PeerNetworkHandler {
      * Gửi game action (resign, offer_draw, accept_draw, reject_draw).
      */
     public void sendGameAction(String action) {
-        if (peerOut == null) return;
-        
+        if (peerOut == null)
+            return;
+
         try {
             JSONObject json = new JSONObject();
             json.put("type", "game_action");
@@ -132,8 +135,9 @@ public class PeerNetworkHandler {
      * Lắng nghe tin nhắn từ đối thủ ở thread riêng.
      */
     private void listenForPeerMessages() {
-        if (peerIn == null) return;
-        
+        if (peerIn == null)
+            return;
+
         try {
             String line;
             while ((line = peerIn.readLine()) != null) {
@@ -156,8 +160,9 @@ public class PeerNetworkHandler {
     }
 
     private void handleReceivedMove(JSONObject json) {
-        if (onMoveReceived == null) return;
-        
+        if (onMoveReceived == null)
+            return;
+
         int fromRow = json.getInt("fromRow");
         int fromCol = json.getInt("fromCol");
         int toRow = json.getInt("toRow");
@@ -172,15 +177,17 @@ public class PeerNetworkHandler {
     }
 
     private void handleReceivedChat(JSONObject json) {
-        if (onChatReceived == null) return;
-        
+        if (onChatReceived == null)
+            return;
+
         String message = json.getString("message");
         Platform.runLater(() -> onChatReceived.onChat(message));
     }
 
     private void handleReceivedGameAction(JSONObject json) {
-        if (onGameActionReceived == null) return;
-        
+        if (onGameActionReceived == null)
+            return;
+
         String action = json.getString("action");
         Platform.runLater(() -> onGameActionReceived.onGameAction(action));
     }
@@ -190,8 +197,10 @@ public class PeerNetworkHandler {
      */
     public void close() {
         try {
-            if (peerIn != null) peerIn.close();
-            if (peerOut != null) peerOut.close();
+            if (peerIn != null)
+                peerIn.close();
+            if (peerOut != null)
+                peerOut.close();
             if (peerSocket != null && !peerSocket.isClosed()) {
                 peerSocket.close();
             }
@@ -200,4 +209,3 @@ public class PeerNetworkHandler {
         }
     }
 }
-

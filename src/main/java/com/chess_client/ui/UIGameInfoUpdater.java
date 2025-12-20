@@ -1,7 +1,8 @@
-package com.chess_client.controllers;
+package com.chess_client.ui;
 
 import com.chess_client.models.Move;
 import com.chess_client.models.Piece;
+import com.chess_client.services.AIPlayer;
 import javafx.scene.control.Label;
 
 /**

@@ -1,4 +1,4 @@
-package com.chess_client.controllers;
+package com.chess_client.services;
 
 import com.chess_client.models.Board;
 import com.chess_client.models.Move;

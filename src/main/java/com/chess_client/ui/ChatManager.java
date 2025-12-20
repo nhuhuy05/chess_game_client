@@ -1,4 +1,4 @@
-package com.chess_client.controllers;
+package com.chess_client.ui;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;

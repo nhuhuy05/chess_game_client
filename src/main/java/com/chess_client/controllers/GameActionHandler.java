@@ -1,6 +1,8 @@
 package com.chess_client.controllers;
 
 import com.chess_client.models.Piece;
+import com.chess_client.network.PeerNetworkHandler;
+import com.chess_client.ui.ChatManager;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
