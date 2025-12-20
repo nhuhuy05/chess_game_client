@@ -4,6 +4,7 @@ import com.chess_client.controllers.admin.handlers.*;
 import com.chess_client.controllers.admin.models.GameRow;
 import com.chess_client.controllers.admin.models.RankingRow;
 import com.chess_client.controllers.admin.models.UserRow;
+import com.chess_client.controllers.admin.utils.ComponentInjector;
 import com.chess_client.controllers.admin.utils.TableSetupHelper;
 import com.chess_client.services.AuthService;
 import javafx.collections.FXCollections;
@@ -16,6 +17,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.util.Map;
 
 /**
  * Controller cho trang quản trị admin với 3 tabs: Người dùng, Trận đấu, Xếp
@@ -111,9 +114,11 @@ public class AdminController {
 
         // Initialize handlers after views are loaded (lblStats is injected)
         statsHandler = new StatsHandler(lblStats);
-        userTabHandler = new UserTabHandler(userList, this::showAlertMessage, statsHandler::loadSystemStats);
-        gameTabHandler = new GameTabHandler(gameList, this::showAlertMessage);
-        rankingTabHandler = new RankingTabHandler(rankingList, this::showAlertMessage);
+        userTabHandler = new UserTabHandler(userList,
+                (type, msg) -> showAlert(type, type == Alert.AlertType.ERROR ? "Lỗi" : "Thông báo", msg),
+                statsHandler::loadSystemStats);
+        gameTabHandler = new GameTabHandler(gameList, msg -> showAlert(Alert.AlertType.ERROR, "Lỗi", msg));
+        rankingTabHandler = new RankingTabHandler(rankingList, msg -> showAlert(Alert.AlertType.ERROR, "Lỗi", msg));
 
         // Setup tables
         setupUserTable();
@@ -121,9 +126,7 @@ public class AdminController {
         setupRankingTable();
 
         // Load initial data
-        if (statsHandler != null) {
-            statsHandler.loadSystemStats();
-        }
+        statsHandler.loadSystemStats();
         userTabHandler.loadUsers("");
         gameTabHandler.loadGames("Tất cả");
         rankingTabHandler.loadRankings();
@@ -134,63 +137,41 @@ public class AdminController {
 
     private void loadViews() {
         try {
-            // Load users view
-            FXMLLoader usersLoader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/admin-users.fxml"));
-            viewUsers = usersLoader.load();
+            viewUsers = loadView("/com/chess_client/fxml/admin-users.fxml");
             injectUserComponents(viewUsers);
 
-            // Load games view
-            FXMLLoader gamesLoader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/admin-games.fxml"));
-            viewGames = gamesLoader.load();
+            viewGames = loadView("/com/chess_client/fxml/admin-games.fxml");
             injectGameComponents(viewGames);
 
-            // Load rankings view
-            FXMLLoader rankingsLoader = new FXMLLoader(
-                    getClass().getResource("/com/chess_client/fxml/admin-rankings.fxml"));
-            viewRankings = rankingsLoader.load();
+            viewRankings = loadView("/com/chess_client/fxml/admin-rankings.fxml");
             injectRankingComponents(viewRankings);
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể tải giao diện: " + e.getMessage());
         }
     }
 
+    private VBox loadView(String resourcePath) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(resourcePath));
+        return loader.load();
+    }
+
     @SuppressWarnings("unchecked")
     private void injectUserComponents(Parent root) {
-        txtSearchUser = (TextField) root.lookup("#txtSearchUser");
-        btnSearchUser = (Button) root.lookup("#btnSearchUser");
-        lblStats = (Label) root.lookup("#lblStats");
-        tblUsers = (TableView<UserRow>) root.lookup("#tblUsers");
+        txtSearchUser = ComponentInjector.lookup(root, "txtSearchUser", TextField.class);
+        btnSearchUser = ComponentInjector.lookup(root, "btnSearchUser", Button.class);
+        lblStats = ComponentInjector.lookup(root, "lblStats", Label.class);
+        tblUsers = ComponentInjector.lookup(root, "tblUsers", TableView.class);
 
-        // Get columns from TableView by ID
-        if (tblUsers != null && !tblUsers.getColumns().isEmpty()) {
-            for (TableColumn<UserRow, ?> col : tblUsers.getColumns()) {
-                String id = col.getId();
-                if (id != null) {
-                    switch (id) {
-                        case "colUserId":
-                            colUserId = (TableColumn<UserRow, Integer>) col;
-                            break;
-                        case "colUsername":
-                            colUsername = (TableColumn<UserRow, String>) col;
-                            break;
-                        case "colDisplayName":
-                            colDisplayName = (TableColumn<UserRow, String>) col;
-                            break;
-                        case "colEmail":
-                            colEmail = (TableColumn<UserRow, String>) col;
-                            break;
-                        case "colPhone":
-                            colPhone = (TableColumn<UserRow, String>) col;
-                            break;
-                        case "colStatus":
-                            colStatus = (TableColumn<UserRow, String>) col;
-                            break;
-                        case "colUserActions":
-                            colUserActions = (TableColumn<UserRow, Void>) col;
-                            break;
-                    }
-                }
-            }
+        // Extract columns using helper
+        if (tblUsers != null) {
+            Map<String, TableColumn<UserRow, ?>> columnMap = ComponentInjector.extractTableColumns(tblUsers);
+            colUserId = (TableColumn<UserRow, Integer>) columnMap.get("colUserId");
+            colUsername = (TableColumn<UserRow, String>) columnMap.get("colUsername");
+            colDisplayName = (TableColumn<UserRow, String>) columnMap.get("colDisplayName");
+            colEmail = (TableColumn<UserRow, String>) columnMap.get("colEmail");
+            colPhone = (TableColumn<UserRow, String>) columnMap.get("colPhone");
+            colStatus = (TableColumn<UserRow, String>) columnMap.get("colStatus");
+            colUserActions = (TableColumn<UserRow, Void>) columnMap.get("colUserActions");
         }
 
         // Setup button handlers
@@ -204,37 +185,19 @@ public class AdminController {
 
     @SuppressWarnings("unchecked")
     private void injectGameComponents(Parent root) {
-        cmbGameStatus = (ComboBox<String>) root.lookup("#cmbGameStatus");
-        btnFilterGames = (Button) root.lookup("#btnFilterGames");
-        tblGames = (TableView<GameRow>) root.lookup("#tblGames");
+        cmbGameStatus = ComponentInjector.lookup(root, "cmbGameStatus", ComboBox.class);
+        btnFilterGames = ComponentInjector.lookup(root, "btnFilterGames", Button.class);
+        tblGames = ComponentInjector.lookup(root, "tblGames", TableView.class);
 
-        // Get columns from TableView by ID
-        if (tblGames != null && !tblGames.getColumns().isEmpty()) {
-            for (TableColumn<GameRow, ?> col : tblGames.getColumns()) {
-                String id = col.getId();
-                if (id != null) {
-                    switch (id) {
-                        case "colGameId":
-                            colGameId = (TableColumn<GameRow, Integer>) col;
-                            break;
-                        case "colWhitePlayer":
-                            colWhitePlayer = (TableColumn<GameRow, String>) col;
-                            break;
-                        case "colBlackPlayer":
-                            colBlackPlayer = (TableColumn<GameRow, String>) col;
-                            break;
-                        case "colGameMode":
-                            colGameMode = (TableColumn<GameRow, String>) col;
-                            break;
-                        case "colGameStatus":
-                            colGameStatus = (TableColumn<GameRow, String>) col;
-                            break;
-                        case "colWinner":
-                            colWinner = (TableColumn<GameRow, String>) col;
-                            break;
-                    }
-                }
-            }
+        // Extract columns using helper
+        if (tblGames != null) {
+            Map<String, TableColumn<GameRow, ?>> columnMap = ComponentInjector.extractTableColumns(tblGames);
+            colGameId = (TableColumn<GameRow, Integer>) columnMap.get("colGameId");
+            colWhitePlayer = (TableColumn<GameRow, String>) columnMap.get("colWhitePlayer");
+            colBlackPlayer = (TableColumn<GameRow, String>) columnMap.get("colBlackPlayer");
+            colGameMode = (TableColumn<GameRow, String>) columnMap.get("colGameMode");
+            colGameStatus = (TableColumn<GameRow, String>) columnMap.get("colGameStatus");
+            colWinner = (TableColumn<GameRow, String>) columnMap.get("colWinner");
         }
 
         // Setup button handlers
@@ -249,41 +212,19 @@ public class AdminController {
 
     @SuppressWarnings("unchecked")
     private void injectRankingComponents(Parent root) {
-        tblRankings = (TableView<RankingRow>) root.lookup("#tblRankings");
+        tblRankings = ComponentInjector.lookup(root, "tblRankings", TableView.class);
 
-        // Get columns from TableView by ID
-        if (tblRankings != null && !tblRankings.getColumns().isEmpty()) {
-            for (TableColumn<RankingRow, ?> col : tblRankings.getColumns()) {
-                String id = col.getId();
-                if (id != null) {
-                    switch (id) {
-                        case "colRank":
-                            colRank = (TableColumn<RankingRow, Integer>) col;
-                            break;
-                        case "colRankUsername":
-                            colRankUsername = (TableColumn<RankingRow, String>) col;
-                            break;
-                        case "colRankDisplayName":
-                            colRankDisplayName = (TableColumn<RankingRow, String>) col;
-                            break;
-                        case "colGamesPlayed":
-                            colGamesPlayed = (TableColumn<RankingRow, Integer>) col;
-                            break;
-                        case "colWins":
-                            colWins = (TableColumn<RankingRow, Integer>) col;
-                            break;
-                        case "colLosses":
-                            colLosses = (TableColumn<RankingRow, Integer>) col;
-                            break;
-                        case "colDraws":
-                            colDraws = (TableColumn<RankingRow, Integer>) col;
-                            break;
-                        case "colScore":
-                            colScore = (TableColumn<RankingRow, Integer>) col;
-                            break;
-                    }
-                }
-            }
+        // Extract columns using helper
+        if (tblRankings != null) {
+            Map<String, TableColumn<RankingRow, ?>> columnMap = ComponentInjector.extractTableColumns(tblRankings);
+            colRank = (TableColumn<RankingRow, Integer>) columnMap.get("colRank");
+            colRankUsername = (TableColumn<RankingRow, String>) columnMap.get("colRankUsername");
+            colRankDisplayName = (TableColumn<RankingRow, String>) columnMap.get("colRankDisplayName");
+            colGamesPlayed = (TableColumn<RankingRow, Integer>) columnMap.get("colGamesPlayed");
+            colWins = (TableColumn<RankingRow, Integer>) columnMap.get("colWins");
+            colLosses = (TableColumn<RankingRow, Integer>) columnMap.get("colLosses");
+            colDraws = (TableColumn<RankingRow, Integer>) columnMap.get("colDraws");
+            colScore = (TableColumn<RankingRow, Integer>) columnMap.get("colScore");
         }
     }
 
@@ -305,59 +246,43 @@ public class AdminController {
     }
 
     private void handleRefreshAll() {
-        if (statsHandler != null) {
-            statsHandler.loadSystemStats();
-        }
-        if (userTabHandler != null) {
-            if (txtSearchUser != null) {
-                userTabHandler.loadUsers(txtSearchUser.getText().trim());
-            } else {
-                userTabHandler.loadUsers("");
-            }
-        }
-        if (gameTabHandler != null) {
-            if (cmbGameStatus != null) {
-                gameTabHandler.loadGames(cmbGameStatus.getValue());
-            } else {
-                gameTabHandler.loadGames("Tất cả");
-            }
-        }
-        if (rankingTabHandler != null) {
-            rankingTabHandler.loadRankings();
-        }
+        statsHandler.loadSystemStats();
+        userTabHandler.loadUsers(txtSearchUser.getText().trim());
+        gameTabHandler.loadGames(cmbGameStatus.getValue());
+        rankingTabHandler.loadRankings();
         showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã làm mới dữ liệu");
     }
 
     private void showView(String viewName) {
-        // Clear content area
         contentArea.getChildren().clear();
-
-        // Reset menu styles
         resetMenuStyles();
 
-        // Show selected view and highlight menu
+        VBox view = null;
+        String title = "";
+        VBox menu = null;
+
         switch (viewName) {
             case "users":
-                if (viewUsers != null) {
-                    contentArea.getChildren().add(viewUsers);
-                    lblTitle.setText("Quản lý Người dùng");
-                    highlightMenu(menuUsers);
-                }
+                view = viewUsers;
+                title = "Quản lý Người dùng";
+                menu = menuUsers;
                 break;
             case "games":
-                if (viewGames != null) {
-                    contentArea.getChildren().add(viewGames);
-                    lblTitle.setText("Quản lý Trận đấu");
-                    highlightMenu(menuGames);
-                }
+                view = viewGames;
+                title = "Quản lý Trận đấu";
+                menu = menuGames;
                 break;
             case "rankings":
-                if (viewRankings != null) {
-                    contentArea.getChildren().add(viewRankings);
-                    lblTitle.setText("Quản lý Xếp hạng");
-                    highlightMenu(menuRankings);
-                }
+                view = viewRankings;
+                title = "Quản lý Xếp hạng";
+                menu = menuRankings;
                 break;
+        }
+
+        if (view != null) {
+            contentArea.getChildren().add(view);
+            lblTitle.setText(title);
+            highlightMenu(menu);
         }
     }
 
@@ -376,20 +301,10 @@ public class AdminController {
     // ==================== SETUP TABLES ====================
 
     private void setupUserTable() {
-        if (tblUsers == null) {
-            return;
-        }
-        if (colUserId == null || colUsername == null || colDisplayName == null ||
+        if (tblUsers == null || colUserId == null || colUsername == null || colDisplayName == null ||
                 colEmail == null || colPhone == null || colStatus == null || colUserActions == null) {
-            if (viewUsers != null) {
-                injectUserComponents(viewUsers);
-            }
-            // Check again after re-injection
-            if (colUserId == null || colUsername == null || colDisplayName == null ||
-                    colEmail == null || colPhone == null || colStatus == null || colUserActions == null) {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể khởi tạo bảng người dùng");
-                return;
-            }
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể khởi tạo bảng người dùng");
+            return;
         }
         TableSetupHelper.setupUserTable(
                 tblUsers,
@@ -406,20 +321,10 @@ public class AdminController {
     }
 
     private void setupGameTable() {
-        if (tblGames == null) {
-            return;
-        }
-        if (colGameId == null || colWhitePlayer == null || colBlackPlayer == null ||
+        if (tblGames == null || colGameId == null || colWhitePlayer == null || colBlackPlayer == null ||
                 colGameMode == null || colGameStatus == null || colWinner == null) {
-            if (viewGames != null) {
-                injectGameComponents(viewGames);
-            }
-            // Check again after re-injection
-            if (colGameId == null || colWhitePlayer == null || colBlackPlayer == null ||
-                    colGameMode == null || colGameStatus == null || colWinner == null) {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể khởi tạo bảng trận đấu");
-                return;
-            }
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể khởi tạo bảng trận đấu");
+            return;
         }
         TableSetupHelper.setupGameTable(
                 tblGames,
@@ -433,38 +338,12 @@ public class AdminController {
     }
 
     private void setupRankingTable() {
-        if (tblRankings == null) {
-            return;
-        }
-        if (colRank == null || colRankUsername == null || colRankDisplayName == null ||
+        if (tblRankings == null || colRank == null || colRankUsername == null || colRankDisplayName == null ||
                 colGamesPlayed == null || colWins == null || colLosses == null ||
                 colDraws == null || colScore == null) {
-            if (viewRankings != null) {
-                injectRankingComponents(viewRankings);
-            }
-            // Check again after re-injection
-            if (colRank == null || colRankUsername == null || colRankDisplayName == null ||
-                    colGamesPlayed == null || colWins == null || colLosses == null ||
-                    colDraws == null || colScore == null) {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể khởi tạo bảng xếp hạng");
-                return;
-            }
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể khởi tạo bảng xếp hạng");
+            return;
         }
-        // Remove any extra columns that don't match expected IDs
-        if (tblRankings != null) {
-            java.util.List<TableColumn<RankingRow, ?>> columnsToRemove = new java.util.ArrayList<>();
-            for (TableColumn<RankingRow, ?> col : tblRankings.getColumns()) {
-                String id = col.getId();
-                if (id == null || (!id.equals("colRank") && !id.equals("colRankUsername") &&
-                        !id.equals("colRankDisplayName") && !id.equals("colGamesPlayed") &&
-                        !id.equals("colWins") && !id.equals("colLosses") &&
-                        !id.equals("colDraws") && !id.equals("colScore"))) {
-                    columnsToRemove.add(col);
-                }
-            }
-            tblRankings.getColumns().removeAll(columnsToRemove);
-        }
-
         TableSetupHelper.setupRankingTable(
                 tblRankings,
                 colRank,
@@ -527,9 +406,5 @@ public class AdminController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
-    }
-
-    private void showAlertMessage(String message) {
-        showAlert(Alert.AlertType.ERROR, "Lỗi", message);
     }
 }

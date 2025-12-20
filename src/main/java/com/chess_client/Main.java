@@ -14,7 +14,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/chess_client/fxml/login.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
+        Scene scene = new Scene(fxmlLoader.load(), 930, 740);
         stage.setResizable(false);
         stage.setTitle("Chess Game");
         stage.getIcons().add(new Image(
@@ -29,7 +29,7 @@ public class Main extends Application {
             AuthService.signOutSync();
             Platform.exit();
             System.exit(0);
-        }); 
+        });
         stage.show();
     }
 
@@ -37,4 +37,3 @@ public class Main extends Application {
         launch();
     }
 }
-    

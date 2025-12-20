@@ -11,7 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * Handler cho tab quản lý người dùng
@@ -19,12 +19,12 @@ import java.util.function.Consumer;
 public class UserTabHandler {
 
     private final ObservableList<UserRow> userList;
-    private final Consumer<String> showAlert;
+    private final BiConsumer<Alert.AlertType, String> showAlert;
     private final Runnable refreshStats;
     private int currentPage = 1;
     private int limit = 20;
 
-    public UserTabHandler(ObservableList<UserRow> userList, Consumer<String> showAlert, Runnable refreshStats) {
+    public UserTabHandler(ObservableList<UserRow> userList, BiConsumer<Alert.AlertType, String> showAlert, Runnable refreshStats) {
         this.userList = userList;
         this.showAlert = showAlert;
         this.refreshStats = refreshStats;
@@ -59,11 +59,11 @@ public class UserTabHandler {
                             }
                         }
                     } else {
-                        showAlert.accept(result.optString("message", "Không thể tải danh sách người dùng"));
+                        showAlert.accept(Alert.AlertType.ERROR, result.optString("message", "Không thể tải danh sách người dùng"));
                     }
                 });
             } catch (Exception e) {
-                Platform.runLater(() -> showAlert.accept("Lỗi kết nối: " + e.getMessage()));
+                Platform.runLater(() -> showAlert.accept(Alert.AlertType.ERROR, "Lỗi kết nối: " + e.getMessage()));
             }
         }).start();
     }
@@ -103,7 +103,7 @@ public class UserTabHandler {
 
             // Basic validation
             if (email.isEmpty() && phone.isEmpty()) {
-                showAlert.accept("Vui lòng nhập ít nhất email hoặc số điện thoại");
+                showAlert.accept(Alert.AlertType.WARNING, "Vui lòng nhập ít nhất email hoặc số điện thoại");
                 return;
             }
 
@@ -118,13 +118,13 @@ public class UserTabHandler {
 
                 Platform.runLater(() -> {
                     if (updateResult.has("statusCode") && updateResult.getInt("statusCode") == 200) {
-                        showAlert.accept("Đã cập nhật người dùng thành công");
+                        showAlert.accept(Alert.AlertType.INFORMATION, "Đã cập nhật người dùng thành công");
                         loadUsers("");
                         if (refreshStats != null) {
                             refreshStats.run();
                         }
                     } else {
-                        showAlert.accept(updateResult.optString("message", "Không thể cập nhật"));
+                        showAlert.accept(Alert.AlertType.ERROR, updateResult.optString("message", "Không thể cập nhật"));
                     }
                 });
             }).start();
@@ -144,13 +144,13 @@ public class UserTabHandler {
 
                 Platform.runLater(() -> {
                     if (deleteResult.has("statusCode") && deleteResult.getInt("statusCode") == 200) {
-                        showAlert.accept("Đã xóa người dùng thành công");
+                        showAlert.accept(Alert.AlertType.INFORMATION, "Đã xóa người dùng thành công");
                         loadUsers("");
                         if (refreshStats != null) {
                             refreshStats.run();
                         }
                     } else {
-                        showAlert.accept(deleteResult.optString("message", "Không thể xóa người dùng"));
+                        showAlert.accept(Alert.AlertType.ERROR, deleteResult.optString("message", "Không thể xóa người dùng"));
                     }
                 });
             }).start();

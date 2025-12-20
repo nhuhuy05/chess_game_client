@@ -84,7 +84,7 @@ public class RegisterController {
                     getClass().getResource("/com/chess_client/fxml/login.fxml")
             );
             javafx.scene.Parent root = loader.load();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root, 500, 600);
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 930, 740);
             javafx.stage.Stage stage = (javafx.stage.Stage) usernameField.getScene().getWindow();
             stage.setScene(scene);
             stage.setResizable(false);
