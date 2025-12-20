@@ -29,7 +29,7 @@ public class Main extends Application {
             AuthService.signOutSync();
             Platform.exit();
             System.exit(0);
-        });
+        }); 
         stage.show();
     }
 
@@ -37,3 +37,4 @@ public class Main extends Application {
         launch();
     }
 }
+    

@@ -2,9 +2,7 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.effect.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
 <AnchorPane prefHeight="740.0" prefWidth="930.0"
             style="-fx-background-color: linear-gradient(to bottom, #0f0f1e, #1a1a2e);"

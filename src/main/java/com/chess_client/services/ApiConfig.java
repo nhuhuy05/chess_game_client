@@ -13,6 +13,7 @@ public class ApiConfig {
     public static final String AUTH_BASE;
     public static final String GAMES_BASE;
     public static final String MATCHMAKING_BASE;
+    public static final String ADMIN_BASE;
 
     static {
         String fromProp = System.getProperty("API_BASE_URL");
@@ -30,5 +31,6 @@ public class ApiConfig {
         AUTH_BASE = BASE_URL + "/api/auth";
         GAMES_BASE = BASE_URL + "/api/games";
         MATCHMAKING_BASE = BASE_URL + "/api/matchmaking";
+        ADMIN_BASE = BASE_URL + "/api/admin";
     }
 }

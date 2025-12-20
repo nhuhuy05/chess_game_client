@@ -1,7 +1,9 @@
 package com.chess_client.controllers;
 
 import com.chess_client.services.AuthService;
+import com.chess_client.services.ProfileService;
 import com.chess_client.services.TokenStorage;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -40,18 +42,45 @@ public class LoginController {
             return;
         }
 
+        // Disable login button to prevent multiple clicks
+        javafx.scene.Node source = usernameField.getScene().getRoot();
+        source.setDisable(true);
+
         JSONObject result = AuthService.signIn(username, password);
         if (result == null) {
             showError("Không kết nối được tới server.");
+            source.setDisable(false);
             return;
         }
 
         if (result.has("accessToken")) {
             TokenStorage.save(result.getString("accessToken"), result.getString("refreshToken"));
-            showInfo("Đăng nhập thành công!");
-            onHome();
+            showInfo("Đăng nhập thành công! Đang chuyển hướng...");
+            
+            // Check user role and route accordingly
+            new Thread(() -> {
+                try {
+                    JSONObject profile = ProfileService.getProfile();
+                    String role = profile.optString("role", "user");
+                    
+                    Platform.runLater(() -> {
+                        if ("admin".equals(role)) {
+                            routeToAdmin();
+                        } else {
+                            routeToHome();
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Platform.runLater(() -> {
+                        showError("Lỗi khi lấy thông tin người dùng!");
+                        source.setDisable(false);
+                    });
+                }
+            }).start();
         } else {
             showError(result.optString("message", "Đăng nhập thất bại."));
+            source.setDisable(false);
         }
     }
 
@@ -89,17 +118,33 @@ public class LoginController {
         }
     }
 
-    private void onHome(){
+    private void routeToHome(){
         try {
-            // Chuyển sang màn hình đăng ký (Sign Up)
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/com/chess_client/fxml/home.fxml"));
             javafx.scene.Scene scene = new javafx.scene.Scene(loader.load());
             javafx.stage.Stage stage = (javafx.stage.Stage) usernameField.getScene().getWindow();
             stage.setScene(scene);
+            stage.setTitle("Chess - Trang chủ");
         } catch (Exception e) {
             e.printStackTrace();
             showError("Không thể mở giao diện trang chủ!");
+        }
+    }
+
+    private void routeToAdmin(){
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/com/chess_client/fxml/admin.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+            javafx.stage.Stage stage = (javafx.stage.Stage) usernameField.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Chess - Quản trị hệ thống");
+            stage.setResizable(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Không thể mở giao diện quản trị!");
         }
     }
 
