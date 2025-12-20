@@ -283,15 +283,32 @@ public class FriendsController {
         nameLabel.setStyle("-fx-text-fill: #f5f5f5; -fx-font-size: 16px; -fx-font-weight: bold;");
         Label usernameLabel = new Label("@" + friend.getString("username"));
         usernameLabel.setStyle("-fx-text-fill: #b0b0b0; -fx-font-size: 12px;");
+
         infoBox.getChildren().addAll(nameLabel, usernameLabel);
+
+        // Status và Buttons container
+        String status = friend.optString("status", "offline");
+        boolean isOnline = "online".equalsIgnoreCase(status);
+        Label statusLabel = new Label(isOnline ? "🟢 Đang online" : "⚫ Đang offline");
+        statusLabel.setStyle(isOnline
+                ? "-fx-text-fill: #4CAF50; -fx-font-size: 12px;"
+                : "-fx-text-fill: #888888; -fx-font-size: 12px;");
 
         // Buttons
         HBox buttonBox = new HBox(10);
         Button playButton = new Button("Mời chơi");
-        playButton.setStyle(
-                "-fx-background-color: #4a9eff; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 15;");
-        playButton.setOnAction(e -> inviteFriendToPlay(friend.getInt("id"),
-                friend.optString("display_name", friend.getString("username"))));
+
+        // Disable nút mời chơi nếu bạn bè offline
+        if (!isOnline) {
+            playButton.setDisable(true);
+            playButton.setStyle(
+                    "-fx-background-color: #555555; -fx-text-fill: #aaaaaa; -fx-background-radius: 5; -fx-padding: 8 15;");
+        } else {
+            playButton.setStyle(
+                    "-fx-background-color: #4a9eff; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 15;");
+            playButton.setOnAction(e -> inviteFriendToPlay(friend.getInt("id"),
+                    friend.optString("display_name", friend.getString("username"))));
+        }
 
         Button deleteButton = new Button("Xóa");
         deleteButton.setStyle(
@@ -300,9 +317,14 @@ public class FriendsController {
 
         buttonBox.getChildren().addAll(playButton, deleteButton);
 
+        // Container cho status và buttons (nằm ngang hàng)
+        HBox rightContainer = new HBox(15);
+        rightContainer.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+        rightContainer.getChildren().addAll(statusLabel, buttonBox);
+
         item.getChildren().addAll(avatarLabel, infoBox);
         HBox.setHgrow(infoBox, javafx.scene.layout.Priority.ALWAYS);
-        item.getChildren().add(buttonBox);
+        item.getChildren().add(rightContainer);
 
         return item;
     }
