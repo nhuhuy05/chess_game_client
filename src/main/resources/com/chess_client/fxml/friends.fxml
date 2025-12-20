@@ -28,7 +28,7 @@
         </HBox>
 
         <!-- TabPane chứa các tab -->
-        <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE"
+        <TabPane fx:id="mainTabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE"
                  style="-fx-background-color: rgba(30, 30, 50, 0.4); -fx-border-color: rgba(74, 158, 255, 0.2); -fx-border-width: 1; -fx-border-radius: 10; -fx-background-radius: 10;">
 
             <!-- Tab 1: Danh sách bạn bè -->
@@ -49,13 +49,16 @@
 
                     <!-- Danh sách bạn bè -->
                     <ScrollPane fitToWidth="true"
+                                VBox.vgrow="ALWAYS"
                                 style="-fx-background-color: transparent; -fx-background: transparent;">
-                        <VBox fx:id="friendsListContainer" spacing="10.0"
-                              style="-fx-background-color: rgba(25, 25, 40, 0.5); -fx-background-radius: 8; -fx-padding: 10;">
-                            <padding>
-                                <Insets bottom="10" left="10" right="10" top="10" />
-                            </padding>
-                        </VBox>
+                        <content>
+                            <VBox fx:id="friendsListContainer" spacing="10.0"
+                                  style="-fx-background-color: rgba(25, 25, 40, 0.5); -fx-background-radius: 8; -fx-padding: 10;">
+                                <padding>
+                                    <Insets bottom="10" left="10" right="10" top="10" />
+                                </padding>
+                            </VBox>
+                        </content>
                     </ScrollPane>
                 </VBox>
             </Tab>
