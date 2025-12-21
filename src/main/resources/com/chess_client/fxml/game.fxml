@@ -13,7 +13,7 @@
     <!-- ===================== -->
     <top>
         <HBox alignment="CENTER_LEFT" spacing="15"
-            style="-fx-background-color: #1a1a2e; -fx-padding: 15;">
+            style="-fx-background-color: #1a1a2e; -fx-padding: 5;">
             <VBox spacing="3" alignment="CENTER_LEFT">
                 <Label fx:id="opponentNameLabel"
                     style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"
@@ -118,7 +118,7 @@
     <!-- ===================== -->
     <bottom>
         <HBox alignment="CENTER_LEFT" spacing="15"
-            style="-fx-background-color: #1a1a2e; -fx-padding: 15;">
+            style="-fx-background-color: #1a1a2e; -fx-padding: 5;">
             <VBox spacing="3" alignment="CENTER_LEFT">
                 <Label fx:id="playerNameLabel"
                     style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"

@@ -1,11 +1,11 @@
-package com.chess_client.controllers.admin;
+package com.chess_client.admin;
 
-import com.chess_client.controllers.admin.handlers.*;
-import com.chess_client.controllers.admin.models.GameRow;
-import com.chess_client.controllers.admin.models.RankingRow;
-import com.chess_client.controllers.admin.models.UserRow;
-import com.chess_client.controllers.admin.utils.ComponentInjector;
-import com.chess_client.controllers.admin.utils.TableSetupHelper;
+import com.chess_client.admin.handlers.*;
+import com.chess_client.admin.models.GameRow;
+import com.chess_client.admin.models.RankingRow;
+import com.chess_client.admin.models.UserRow;
+import com.chess_client.admin.utils.ComponentInjector;
+import com.chess_client.admin.utils.TableSetupHelper;
 import com.chess_client.services.AuthService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

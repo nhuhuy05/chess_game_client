@@ -1,8 +1,8 @@
-package com.chess_client.controllers.admin.utils;
+package com.chess_client.admin.utils;
 
-import com.chess_client.controllers.admin.models.GameRow;
-import com.chess_client.controllers.admin.models.RankingRow;
-import com.chess_client.controllers.admin.models.UserRow;
+import com.chess_client.admin.models.GameRow;
+import com.chess_client.admin.models.RankingRow;
+import com.chess_client.admin.models.UserRow;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;

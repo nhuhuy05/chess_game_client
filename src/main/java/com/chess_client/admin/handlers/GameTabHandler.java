@@ -1,6 +1,6 @@
-package com.chess_client.controllers.admin.handlers;
+package com.chess_client.admin.handlers;
 
-import com.chess_client.controllers.admin.models.GameRow;
+import com.chess_client.admin.models.GameRow;
 import com.chess_client.services.AdminService;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;

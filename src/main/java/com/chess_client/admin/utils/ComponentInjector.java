@@ -1,4 +1,4 @@
-package com.chess_client.controllers.admin.utils;
+package com.chess_client.admin.utils;
 
 import javafx.scene.Parent;
 import javafx.scene.control.TableColumn;

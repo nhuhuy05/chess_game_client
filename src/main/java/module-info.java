@@ -20,8 +20,8 @@ module com.chessclient.chess_client {
 
     opens com.chess_client.controllers to javafx.fxml;
 
-    exports com.chess_client.controllers.admin;
+    exports com.chess_client.admin;
 
-    opens com.chess_client.controllers.admin to javafx.fxml;
-    opens com.chess_client.controllers.admin.models to javafx.base;
+    opens com.chess_client.admin to javafx.fxml;
+    opens com.chess_client.admin.models to javafx.base;
 }

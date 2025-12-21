@@ -1,4 +1,4 @@
-package com.chess_client.controllers.admin.models;
+package com.chess_client.admin.models;
 
 /**
  * Data class cho hàng trong bảng người dùng
