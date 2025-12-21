@@ -107,6 +107,7 @@ public class GameController {
         // Khởi tạo network handler
         peerNetworkHandler = new PeerNetworkHandler();
         setupNetworkCallbacks();
+        setupChatSendHandler();
 
         // Khởi tạo game state checker
         gameStateChecker = new GameStateChecker(board, gameLogic);
@@ -229,6 +230,20 @@ public class GameController {
     private void setupEventHandlers() {
         drawButton.setOnAction(e -> offerDraw());
         resignButton.setOnAction(e -> resign());
+    }
+
+    /**
+     * Li §n kAºt UI chat vAÿ network handler Ž` ¯Ÿ g ¯-i tin nh §_n sang Ž` ¯`i th ¯.
+     */
+    private void setupChatSendHandler() {
+        if (chatManager == null) {
+            return;
+        }
+        chatManager.setOnSendMessage(message -> {
+            if (peerNetworkHandler != null) {
+                peerNetworkHandler.sendChatMessage(message);
+            }
+        });
     }
 
     private void initializeGame() {
