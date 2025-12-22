@@ -58,7 +58,7 @@ public class GameTabHandler {
                                         game.getString("mode"),
                                         game.getString("status"),
                                         game.optString("winner_display_name",
-                                                game.optString("winner_username", "N/A"))));
+                                                game.optString("winner_username", "Hòa"))));
                             }
 
                             // Update UI on JavaFX thread
