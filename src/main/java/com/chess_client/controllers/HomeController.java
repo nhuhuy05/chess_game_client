@@ -3,6 +3,7 @@ package com.chess_client.controllers;
 import com.chess_client.models.Piece;
 import com.chess_client.services.AuthService;
 import com.chess_client.services.ApiConfig;
+import com.chess_client.services.GameService;
 import com.chess_client.services.HomeMatchmakingResult;
 import com.chess_client.services.HomeService;
 import com.chess_client.services.TokenStorage;
@@ -18,6 +19,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class HomeController {
 
@@ -43,6 +47,130 @@ public class HomeController {
     private Label lblWelcome;
 
     private Alert waitingAlert;
+    private ScheduledExecutorService syncExecutor;
+    private GameService gameService;
+
+    // Static reference để GameService có thể notify khi lưu kết quả offline
+    private static HomeController instance;
+
+    /**
+     * Khởi tạo controller: sync offline results ngay lập tức
+     * Timer chỉ được khởi động nếu có kết quả pending
+     */
+    @FXML
+    public void initialize() {
+        instance = this; // Lưu static reference
+        gameService = new GameService();
+
+        // Sync ngay khi app khởi động (sync đồng bộ để biết kết quả)
+        boolean hasPending = syncOfflineResultsSync();
+
+        // Chỉ khởi động timer nếu còn kết quả pending
+        if (hasPending) {
+            startSyncTimer();
+        }
+    }
+
+    /**
+     * Sync offline results trong background thread
+     * 
+     * @return true nếu còn kết quả pending, false nếu đã sync xong
+     *         Note: Trong timer, method này sẽ chạy async và kiểm tra kết quả sau
+     */
+    private boolean syncOfflineResults() {
+        // Kiểm tra nhanh xem có kết quả pending không trước khi sync
+        if (!com.chess_client.services.OfflineResultManager.hasPendingResults()) {
+            return false;
+        }
+
+        // Sync trong background thread
+        new Thread(() -> {
+            try {
+                boolean hasPending = gameService.syncOfflineResults();
+                // Nếu không còn kết quả pending và timer đang chạy, dừng timer
+                if (!hasPending && syncExecutor != null && !syncExecutor.isShutdown()) {
+                    Platform.runLater(() -> {
+                        stopSyncTimer();
+                        System.out.println("Đã sync xong tất cả kết quả offline, dừng timer");
+                    });
+                }
+            } catch (Exception e) {
+                System.err.println("Lỗi khi sync offline results: " + e.getMessage());
+            }
+        }).start();
+
+        // Trả về true vì đã có kết quả pending (đã kiểm tra ở trên)
+        return true;
+    }
+
+    /**
+     * Sync offline results và đợi kết quả (dùng khi khởi động app)
+     * 
+     * @return true nếu còn kết quả pending, false nếu đã sync xong
+     */
+    private boolean syncOfflineResultsSync() {
+        try {
+            return gameService.syncOfflineResults();
+        } catch (Exception e) {
+            System.err.println("Lỗi khi sync offline results: " + e.getMessage());
+            return com.chess_client.services.OfflineResultManager.hasPendingResults();
+        }
+    }
+
+    /**
+     * Khởi động timer để sync mỗi 1 phút
+     * Timer sẽ tự dừng khi không còn kết quả pending
+     */
+    private void startSyncTimer() {
+        // Dừng timer cũ nếu có
+        stopSyncTimer();
+
+        // Tạo scheduled executor mới để sync mỗi 1 phút
+        syncExecutor = Executors.newSingleThreadScheduledExecutor();
+        syncExecutor.scheduleAtFixedRate(
+                this::syncOfflineResults, // Chạy async, tự kiểm tra và dừng timer nếu cần
+                60, // Delay 60 giây
+                60, // Repeat mỗi 60 giây
+                TimeUnit.SECONDS);
+    }
+
+    /**
+     * Dừng timer sync
+     */
+    private void stopSyncTimer() {
+        if (syncExecutor != null && !syncExecutor.isShutdown()) {
+            syncExecutor.shutdown();
+            try {
+                if (!syncExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+                    syncExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                syncExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+            syncExecutor = null;
+        }
+    }
+
+    /**
+     * Được gọi khi có lỗi và lưu kết quả vào offline_results.json
+     * Khởi động timer nếu chưa chạy
+     */
+    public void onOfflineResultSaved() {
+        // Nếu timer chưa chạy, khởi động nó
+        if (syncExecutor == null || syncExecutor.isShutdown()) {
+            startSyncTimer();
+        }
+    }
+
+    /**
+     * Static method để GameService notify khi lưu kết quả offline
+     */
+    public static void notifyOfflineResultSaved() {
+        if (instance != null) {
+            Platform.runLater(() -> instance.onOfflineResultSaved());
+        }
+    }
 
     @FXML
     private void handleRandomMatch() {
@@ -232,6 +360,17 @@ public class HomeController {
 
     @FXML
     private void handleExit() {
+        // Dừng sync executor trước khi thoát
+        if (syncExecutor != null && !syncExecutor.isShutdown()) {
+            syncExecutor.shutdown();
+            try {
+                if (!syncExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    syncExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                syncExecutor.shutdownNow();
+            }
+        }
         AuthService.signOutSync();
         Platform.exit();
         System.exit(0);

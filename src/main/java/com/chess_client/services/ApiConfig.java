@@ -20,7 +20,7 @@ public class ApiConfig {
         String fromEnv = System.getenv("API_BASE_URL");
         String base = fromProp != null && !fromProp.isBlank()
                 ? fromProp
-                : (fromEnv != null && !fromEnv.isBlank() ? fromEnv : "http://localhost:5000");
+                : (fromEnv != null && !fromEnv.isBlank() ? fromEnv : "http://172.20.10.2:5000");
 
         // Bỏ dấu / ở cuối nếu có
         if (base.endsWith("/")) {
